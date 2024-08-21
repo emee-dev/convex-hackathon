@@ -1,0 +1,10 @@
+
+### Get 
+GET  http://localhost:3000/api
+Content-Type: application/json
+
+
+
+### POST
+POST http://localhost:3000/api
+Content-Type: application/json
