@@ -1,8 +1,6 @@
-#!/usr/bin/env node
-
 import { watch } from "chokidar";
 import { readFile } from "fs/promises";
-import packageJson from "./package.json";
+import packageJson from "../package.json";
 
 // const watcher = watch([".env", ".env.local"], {
 const watcher = watch(packageJson.vault["env-files"], {

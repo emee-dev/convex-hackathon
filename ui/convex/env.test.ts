@@ -7,7 +7,7 @@ test("retrieve env file", async () => {
   const t = convexTest(schema);
   let envfile = await t.query(api.env.getEnvByFileName, {
     file_name: "",
-    path: "",
+    // path: "",
   });
   //   await t.mutation(api.env.storeEnvFile, {
   //     file_name: "",

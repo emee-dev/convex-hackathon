@@ -1,23 +1,38 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { filter } from "convex-helpers/server/filter";
 
 export const getEnvByFileName = query({
   args: {
     file_name: v.string(),
-    path: v.string(),
+    // path: v.string(),
   },
-  handler: async (ctx, { file_name, path }) => {
-    let does_env_exist = await ctx.db
+  handler: async (ctx, { file_name }) => {
+    let record = await ctx.db
       .query("env")
       .filter((q) =>
         q.and(
-          q.eq(q.field("file_name"), file_name),
-          q.eq(q.field("path"), path)
+          q.eq(q.field("file_name"), file_name)
+          // q.eq(q.field("path"), path)
         )
       )
       .first();
 
-    return { message: "Env was found!!!", data: does_env_exist };
+    return { message: "Env was found!!!", data: record };
+  },
+});
+
+export const getWatchEnvList = query({
+  args: {
+    file_names: v.array(v.string()),
+    // path: v.string(),
+  },
+  handler: async (ctx, { file_names }) => {
+    let record = await filter(ctx.db.query("env"), (post) =>
+      file_names.includes(post.file_name)
+    ).collect();
+
+    return { message: "Env was found!!!", data: record };
   },
 });
 
@@ -27,8 +42,12 @@ export const storeEnvFile = mutation({
     encryptedData: v.string(),
     path: v.string(),
     environment: v.string(),
+    projectId: v.string(),
   },
-  handler: async (ctx, { file_name, encryptedData, path, environment }) => {
+  handler: async (
+    ctx,
+    { file_name, encryptedData, path, environment, projectId }
+  ) => {
     let does_env_exist = await ctx.db
       .query("env")
       .filter((q) =>
@@ -43,9 +62,10 @@ export const storeEnvFile = mutation({
     if (!does_env_exist) {
       let new_record = await ctx.db.insert("env", {
         file_name,
-        encryptedData,
         path,
+        encryptedData,
         environment,
+        project_id: projectId,
       });
 
       return { message: "Env was inserted", data: null };
@@ -65,27 +85,27 @@ export const storeEnvFile = mutation({
   },
 });
 
-export const storePrivateKey = mutation({
-  args: {
-    file_name: v.string(),
-    private_key_slice: v.string(),
-  },
-  handler: async (ctx, { file_name, private_key_slice }) => {
-    let does_private_key_exist = await ctx.db
-      .query("private_keys")
-      .filter((q) => q.and(q.eq(q.field("file_name"), file_name)))
-      .first();
+// export const storePrivateKey = mutation({
+//   args: {
+//     file_name: v.string(),
+//     private_key_slice: v.string(),
+//   },
+//   handler: async (ctx, { file_name, private_key_slice }) => {
+//     let does_private_key_exist = await ctx.db
+//       .query("private_keys")
+//       .filter((q) => q.and(q.eq(q.field("file_name"), file_name)))
+//       .first();
 
-    if (!does_private_key_exist) {
-      await ctx.db.insert("private_keys", {
-        file_name,
-        private_key_slice,
-      });
+//     if (!does_private_key_exist) {
+//       await ctx.db.insert("private_keys", {
+//         file_name,
+//         private_key_slice,
+//       });
 
-      return { message: "Private key was inserted", data: null };
-    }
+//       return { message: "Private key was inserted", data: null };
+//     }
 
-    ctx.db.patch(does_private_key_exist._id, { private_key_slice });
-    return { message: "Private key was updated!!!", data: null };
-  },
-});
+//     ctx.db.patch(does_private_key_exist._id, { private_key_slice });
+//     return { message: "Private key was updated!!!", data: null };
+//   },
+// });

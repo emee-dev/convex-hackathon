@@ -8,16 +8,22 @@ export default defineSchema({
     path: v.string(),
     // TODO make sure the environment is unique par file
     environment: v.string(), // eg development, ci, staging, production
+    project_id: v.string(),
   }).index("by_file_name", ["file_name"]),
+  projects: defineTable({
+    name: v.string(),
+    project_id: v.string(),
+    website: v.string(),
+  }).index("by_project_id", ["project_id"]),
   team: defineTable({
     name: v.string(),
     email: v.string(),
     role: v.string(),
   }).index("by_email", ["email"]),
-  private_keys: defineTable({
-    file_name: v.string(),
-    private_key_slice: v.string(),
-  }).index("by_file_name", ["file_name"]),
+  // private_keys: defineTable({
+  //   file_name: v.string(),
+  //   private_key_slice: v.string(),
+  // }).index("by_file_name", ["file_name"]),
   audit_logs: defineTable({
     modified_by: v.string(),
     action_type: v.union(

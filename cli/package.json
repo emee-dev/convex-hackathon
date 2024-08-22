@@ -1,5 +1,5 @@
 {
-  "name": "cli",
+  "name": "vault",
   "version": "1.0.0",
   "description": "A cli that watches for env file changes",
   "main": "./dist/index.js",
@@ -10,7 +10,7 @@
   },
   "scripts": {
     "test": "",
-    "dev": "tsx index.ts",
+    "dev": "tsx ./src/index.ts",
     "build": "rm -rf ./dist && tsup ./src/index.ts --format esm,cjs --dts",
     "lint": "tsc"
   },
@@ -32,7 +32,10 @@
     "management"
   ],
   "dependencies": {
+    "@types/node": "^20.14.14",
+    "axios": "^1.7.4",
     "chokidar": "^3.6.0",
+    "commander": "^12.1.0",
     "dotenv": "^16.4.5",
     "glob": "^11.0.0",
     "zx": "^8.1.4"

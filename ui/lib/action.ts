@@ -74,20 +74,20 @@ type EnvParams = {
 //   };
 // };
 
-export const encryptEnvFile = async ({
-  path,
+// iv.encryptionKey in base64
+type PrivateKey = `${string}.${string}`;
+
+export const encryptContent = async ({
   content,
-  file_name,
-  environment,
-}: EnvParams) => {
+}: Pick<EnvParams, "content">) => {
   let formatter = new Format();
 
-  let text = `Creates a new cryptographic key for AES-GCM. 
-  The key is 128 bits long and is marked as extractable (true), 
-  meaning it can be exported if needed. The key can be used for 
-  both encryption and decryption.`;
+  // let text = `Creates a new cryptographic key for AES-GCM.
+  // The key is 128 bits long and is marked as extractable (true),
+  // meaning it can be exported if needed. The key can be used for
+  // both encryption and decryption.`;
 
-  let encryptedText = await encrypt({ text });
+  let encryptedText = await encrypt({ text: content });
 
   let encryptedData = formatter.encryptedBufferToBase64(
     encryptedText.encryptedBuffer
@@ -96,28 +96,21 @@ export const encryptEnvFile = async ({
   // Important
   const iv = formatter.ivToBase64(encryptedText.iv);
 
-  const data = (await client.mutation(api.env.storeEnvFile, {
-    path,
-    file_name,
-    environment,
-    encryptedData,
-  })) as { message: string; data: null };
-
   // Important
   let encryptionKey = await deriveEncryptionKeyFromCryptoKey(
     encryptedText.cryptoKey
   );
 
   return {
-    message: data.message,
+    // message: data.message,
     // clientPrivateKey: "clientSlice",
     // publicKey: publicKeyValue,
-    ivAndEncryptionKey: `${iv}.${encryptionKey}`,
+    privateKey: `${iv}.${encryptionKey}`,
     encryptedData,
-  };
+  } as { privateKey: PrivateKey; encryptedData: string };
 };
 
-export const decryptEnvFile = async ({
+export const decryptContent = async ({
   iv,
   encryptedData,
   encryptionKey,
@@ -128,22 +121,10 @@ export const decryptEnvFile = async ({
 }) => {
   let formatter = new Format();
 
-  let record = await client.query(api.env.getEnvByFileName, {
-    file_name: ".env.local",
-    path: ".env.local",
-  });
-
-  if (!record.data) {
-    return {
-      message: "No file was found.",
-      decryptedText: null,
-    };
-  }
-
   const convertIv = formatter.base64IvToUint8Array(iv);
   const convertEncryptedData =
-    // formatter.encryptedBufferToUint8Array(encryptedData);
-    formatter.encryptedBufferToUint8Array(record.data.encryptedData);
+    formatter.encryptedBufferToUint8Array(encryptedData);
+  // formatter.encryptedBufferToUint8Array(record.data.encryptedData);
 
   const derivedCryptoKey = await deriveCryptoKeyfromEncryptionKey(
     encryptionKey,
@@ -156,8 +137,62 @@ export const decryptEnvFile = async ({
     iv: convertIv,
   });
 
-  return {
-    message: "Env was decrypted.",
-    decryptedText: decryptedText,
-  };
+  return decryptedText;
 };
+
+// Cli
+export const pullLatestChanges = async ({
+  fileNames,
+}: {
+  fileNames: string[];
+}) => {
+  const file = client.query(api.env.getWatchEnvList, {
+    file_names: fileNames,
+  });
+
+  return file;
+};
+
+export const pushChanges = async ({
+  file_name,
+  path,
+  environment,
+  encryptedData,
+  projectId,
+}: {
+  file_name: string;
+  path: string;
+  environment: string;
+  encryptedData: string;
+  projectId: string;
+}) => {
+  // TODO add a status message to know if file was saved.
+  const data = (await client.mutation(api.env.storeEnvFile, {
+    path,
+    file_name,
+    environment,
+    encryptedData,
+    projectId,
+  })) as { message: string; data: null };
+
+  return data;
+};
+
+// DB
+// export const getEnvByFileName = async ({
+//   file_name,
+// }: {
+//   file_name: string;
+// }) => {
+//   let record = await client.query(api.env.getEnvByFileName, {
+//     file_name,
+//     // path: ".env.local",
+//   });
+
+//   if (!record.data) {
+//     return {
+//       message: "No file was found.",
+//       decryptedText: null,
+//     };
+//   }
+// };
