@@ -1,111 +1,103 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { filter } from "convex-helpers/server/filter";
 
 export const getEnvByFileName = query({
   args: {
-    file_name: v.string(),
-    // path: v.string(),
+    fileName: v.string(),
+    projectId: v.string(),
   },
-  handler: async (ctx, { file_name }) => {
-    let record = await ctx.db
-      .query("env")
+  handler: async (ctx, { fileName, projectId /* skip_flag */ }) => {
+    let file = await ctx.db
+      .query("variables")
       .filter((q) =>
         q.and(
-          q.eq(q.field("file_name"), file_name)
-          // q.eq(q.field("path"), path)
+          q.eq(q.field("fileName"), fileName),
+          q.eq(q.field("uniqueProjectId"), projectId)
         )
       )
       .first();
 
-    return { message: "Env was found!!!", data: record };
-  },
-});
+    if (!file) {
+      return {
+        message: "Could not find environment by file name.",
+        data: null,
+      };
+    }
 
-export const getWatchEnvList = query({
-  args: {
-    file_names: v.array(v.string()),
-    // path: v.string(),
-  },
-  handler: async (ctx, { file_names }) => {
-    let record = await filter(ctx.db.query("env"), (post) =>
-      file_names.includes(post.file_name)
-    ).collect();
+    // Get the latest changes
+    let encryptedContent = await ctx.db
+      .query("audit_logs")
+      .filter((q) => q.eq(q.field("variableId"), file._id))
+      .order("desc")
+      .first();
 
-    return { message: "Env was found!!!", data: record };
+    return { message: "Environemt was returned.", data: encryptedContent };
   },
 });
 
 export const storeEnvFile = mutation({
   args: {
-    file_name: v.string(),
-    encryptedData: v.string(),
-    path: v.string(),
-    environment: v.string(),
-    projectId: v.string(),
+    env: v.object({
+      path: v.string(),
+      version: v.string(),
+      fileName: v.string(),
+      projectId: v.string(),
+      encryptedData: v.string(),
+    }),
+    user: v.object({
+      clerkUserId: v.string(),
+    }),
   },
-  handler: async (
-    ctx,
-    { file_name, encryptedData, path, environment, projectId }
-  ) => {
-    let does_env_exist = await ctx.db
-      .query("env")
+  handler: async (ctx, { env, user }) => {
+    const { fileName, encryptedData, path, projectId, version } = env;
+    const { clerkUserId } = user;
+
+    let variableRecord = await ctx.db
+      .query("variables")
       .filter((q) =>
         q.and(
-          q.eq(q.field("file_name"), file_name),
           q.eq(q.field("path"), path),
-          q.eq(q.field("environment"), environment)
+          q.eq(q.field("fileName"), fileName),
+          q.eq(q.field("uniqueProjectId"), projectId)
         )
       )
       .first();
 
-    if (!does_env_exist) {
-      let new_record = await ctx.db.insert("env", {
-        file_name,
+    if (!variableRecord) {
+      let variableId = await ctx.db.insert("variables", {
         path,
-        encryptedData,
-        environment,
-        project_id: projectId,
+        fileName,
+        uniqueProjectId: projectId,
       });
 
-      return { message: "Env was inserted", data: null };
+      let new_record = await ctx.db.insert("audit_logs", {
+        version,
+        variableId,
+        encryptedData,
+        type: "CREATED",
+        uniqueProjectId: projectId,
+        modifiedByclerkUserId: clerkUserId,
+      });
+
+      return {
+        message: "Environemt variable was stored.",
+        data: { modified: false, acknowledged: true },
+      };
     }
 
-    // if (
-    //   does_env_exist.file_name === file_name &&
-    //   does_env_exist.path === path
-    // ) {
-    //   ctx.db.patch(does_env_exist._id, { content });
-    //   return { message: "Env was updated!!!" };
-    // }
+    // Use uuid to make sure that the private keys are not overwritten
+    await ctx.db.insert("audit_logs", {
+      version,
+      encryptedData,
+      type: "MODIFIED",
+      uniqueProjectId: projectId,
+      variableId: variableRecord._id,
+      modifiedByclerkUserId: clerkUserId,
+    });
 
-    // TODO make sure you are not overriding the content, instead edit or appending as needed.
-    ctx.db.patch(does_env_exist._id, { encryptedData });
-    return { message: "Env was updated!!!", data: null };
+    return {
+      message: "Environemt variable was modified.",
+      data: { modified: true, acknowledged: true },
+    };
   },
 });
-
-// export const storePrivateKey = mutation({
-//   args: {
-//     file_name: v.string(),
-//     private_key_slice: v.string(),
-//   },
-//   handler: async (ctx, { file_name, private_key_slice }) => {
-//     let does_private_key_exist = await ctx.db
-//       .query("private_keys")
-//       .filter((q) => q.and(q.eq(q.field("file_name"), file_name)))
-//       .first();
-
-//     if (!does_private_key_exist) {
-//       await ctx.db.insert("private_keys", {
-//         file_name,
-//         private_key_slice,
-//       });
-
-//       return { message: "Private key was inserted", data: null };
-//     }
-
-//     ctx.db.patch(does_private_key_exist._id, { private_key_slice });
-//     return { message: "Private key was updated!!!", data: null };
-//   },
-// });

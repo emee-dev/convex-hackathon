@@ -1,0 +1,8 @@
+{
+  "projectId": "2a8136f6-5c57-40a7-973d-81d6b23b4160",
+  "profiles": {
+    "development": ".env",
+    "production": ".env.production",
+    "test": ".env.test"
+  }
+}

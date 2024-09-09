@@ -1,46 +1,58 @@
 {
-  "name": "vault",
-  "version": "1.0.0",
-  "description": "A cli that watches for env file changes",
+  "name": "@dxenv/cli",
+  "version": "0.0.1",
+  "description": "The best way to securely share and manage environment variables in your team.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "type": "module",
   "bin": {
-    "vault": "./dist/index.js"
+    "dxenv": "./dist/index.js",
+    "dx": "./dist/index.js"
   },
   "scripts": {
     "test": "",
-    "dev": "tsx ./src/index.ts",
-    "build": "rm -rf ./dist && tsup ./src/index.ts --format esm,cjs --dts",
+    "dev": "dotenv -e .env.local -- tsx ./src/index.ts",
+    "build": "rm -rf ./dist && tsup",
     "lint": "tsc"
-  },
-  "vault": {
-    "env-files": [
-      ".env",
-      ".env.local"
-    ]
   },
   "files": [
     "./dist/**",
-    "./package.json"
+    "./package.json",
+    "./README.md"
   ],
   "keywords": [
     "real-time",
     "convex",
     "vault",
     "secrets",
-    "management"
+    "management",
+    "dotenv"
   ],
   "dependencies": {
     "@types/node": "^20.14.14",
+    "async-listen": "^3.0.1",
     "axios": "^1.7.4",
     "chokidar": "^3.6.0",
     "commander": "^12.1.0",
     "dotenv": "^16.4.5",
     "glob": "^11.0.0",
+    "nanoid": "3.3.4",
+    "open": "^10.1.0",
+    "ora": "^8.0.1",
+    "picocolors": "^1.0.1",
     "zx": "^8.1.4"
   },
   "devDependencies": {
+    "esbuild": "^0.23.1",
     "tsup": "^8.2.4",
     "tsx": "^4.16.5"
   },

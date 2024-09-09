@@ -1,36 +1,12 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+Ven (from env) is a platform agnostic tool that helps teams properly share 🤝 and manage environment variables in realtime securely while adhering to environment variable management best practices. It utilizes the best encryption methods and by utilizing clerk auth it allows teams to worryless about their environments and also be able to onboard team members easily. It provides the best developer experience by addressing the following 👋:
 
-## Getting Started
-
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+- Stream realtime changes to the dashboard via Convex and Next js actions securely 🙌.
+- CLI authentication with auth provider using webapp to proxy backend server.
+- Implementing the well known AES data encryption standard, well known for its Integrity, Consistency and Accessibility.
+- Role based access controls.
+- Multiple team members per project.
+- First class typescript support. It generates typescript bindings via the ven cli.
+- Integration into CICD pipelines.
+- Audit logs and edit versions.
+- AI Chatbot that is aware of your environment variable documentation.
+- Fetch environment variables via aliases eg ci, staging, production as defined in config file.

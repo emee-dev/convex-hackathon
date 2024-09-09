@@ -1,10 +1,30 @@
 
 ### Get 
-GET  http://localhost:3000/api
+GET http://localhost:3000/api
 Content-Type: application/json
 
 
-
-### POST
+### Get User
 POST http://localhost:3000/api
 Content-Type: application/json
+
+{
+
+}
+
+
+### cli push command
+POST http://localhost:3000/api/env
+Content-Type: application/json
+
+{
+     
+}
+
+### cli pull command
+PUT http://localhost:3000/api/env
+Content-Type: application/json
+
+{
+    "watchlist": []
+}

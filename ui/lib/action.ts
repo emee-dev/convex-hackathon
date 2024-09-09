@@ -3,8 +3,6 @@
 import "server-only";
 import { ConvexHttpClient } from "convex/browser";
 
-const client = new ConvexHttpClient(process.env["NEXT_PUBLIC_CONVEX_URL"]!);
-
 import {
   encryptData,
   extractKeys,
@@ -19,6 +17,16 @@ import {
   Format,
 } from "./helper/aes-gcm";
 
+const client = new ConvexHttpClient(process.env["NEXT_PUBLIC_CONVEX_URL"]!);
+
+type CreateUser = {
+  email: string;
+  clerkUserId: string;
+  firstName: string;
+  lastName: string;
+  system_role: "basic_user";
+};
+
 type EnvParams = {
   file_name: string;
   content: string;
@@ -26,66 +34,13 @@ type EnvParams = {
   environment: string;
 };
 
-// export const encryptEnvFile = async ({
-//   file_name,
-//   content,
-//   environment,
-//   path,
-// }: EnvParams) => {
-//   // Generate a new key pair
-//   const { publicKey, privateKey } = generatePublicAndPrivateKeys();
-
-//   // implementation goes here
-//   const ciphertext = encryptData(content, publicKey);
-
-//   // const findEnv = await ctx.runQuery(api.env.getEnvFile, { file_name, path });
-
-//   const data = (await fetchMutation(api.env.storeEnvFile, {
-//     file_name,
-//     content: ciphertext,
-//     path,
-//     environment,
-//   })) as { message: string; data: null };
-
-//   // let { publicKeyValue, privateKeyValue } = extractKeys(publicKey, privateKey);
-
-//   // if (!publicKeyValue || !privateKeyValue) {
-//   //   console.error("Error extracting keys");
-//   //   return { message: "Error extracting keys", data: null };
-//   // }
-
-//   // Splits the private key into client and server keys
-//   // let formatter = new Formatter(privateKeyValue);
-
-//   // let clientSlice = formatter.extractClientSlice();
-//   // let serverSlice = formatter.extractServerSlice();
-
-//   // TODO Use upstash to store the other half of the private key
-//   // const save_private_key = (await fetchMutation(api.env.storePrivateKey, {
-//   //   file_name,
-//   //   private_key_slice: serverSlice as string,
-//   // })) as { message: string; data: null };
-
-//   return {
-//     message: data.message,
-//     // clientPrivateKey: "clientSlice",
-//     // publicKey: publicKeyValue,
-//     ciphertext,
-//   };
-// };
-
-// iv.encryptionKey in base64
-type PrivateKey = `${string}.${string}`;
+/** `PrivateKey` -> `pkey_` + `iv` + `encryptionKey` */
+export type PrivateKey = `pkey_${string}.${string}`;
 
 export const encryptContent = async ({
   content,
 }: Pick<EnvParams, "content">) => {
   let formatter = new Format();
-
-  // let text = `Creates a new cryptographic key for AES-GCM.
-  // The key is 128 bits long and is marked as extractable (true),
-  // meaning it can be exported if needed. The key can be used for
-  // both encryption and decryption.`;
 
   let encryptedText = await encrypt({ text: content });
 
@@ -102,12 +57,9 @@ export const encryptContent = async ({
   );
 
   return {
-    // message: data.message,
-    // clientPrivateKey: "clientSlice",
-    // publicKey: publicKeyValue,
-    privateKey: `${iv}.${encryptionKey}`,
+    privateKey: `pkey_${iv}.${encryptionKey}`,
     encryptedData,
-  } as { privateKey: PrivateKey; encryptedData: string };
+  } satisfies { privateKey: PrivateKey; encryptedData: string };
 };
 
 export const decryptContent = async ({
@@ -140,59 +92,60 @@ export const decryptContent = async ({
   return decryptedText;
 };
 
-// Cli
-export const pullLatestChanges = async ({
-  fileNames,
+// CLI pull
+export const __pullLatestChanges = async ({
+  fileName,
+  projectId,
 }: {
-  fileNames: string[];
+  fileName: string;
+  projectId: string;
 }) => {
-  const file = client.query(api.env.getWatchEnvList, {
-    file_names: fileNames,
+  const file = client.query(api.env.getEnvByFileName, {
+    fileName,
+    projectId,
   });
 
   return file;
 };
 
-export const pushChanges = async ({
-  file_name,
+// CLI push
+export const __pushChanges = async ({
   path,
-  environment,
-  encryptedData,
+  version,
+  fileName,
   projectId,
+  clerkUserId,
+  encryptedData,
 }: {
-  file_name: string;
   path: string;
-  environment: string;
-  encryptedData: string;
+  version: string;
+  fileName: string;
   projectId: string;
+  clerkUserId: string;
+  encryptedData: string;
 }) => {
-  // TODO add a status message to know if file was saved.
-  const data = (await client.mutation(api.env.storeEnvFile, {
-    path,
-    file_name,
-    environment,
-    encryptedData,
-    projectId,
-  })) as { message: string; data: null };
+  const data = await client.mutation(api.env.storeEnvFile, {
+    env: { version, path, fileName, encryptedData, projectId },
+    user: { clerkUserId },
+  });
 
   return data;
 };
 
-// DB
-// export const getEnvByFileName = async ({
-//   file_name,
-// }: {
-//   file_name: string;
-// }) => {
-//   let record = await client.query(api.env.getEnvByFileName, {
-//     file_name,
-//     // path: ".env.local",
-//   });
+export const __handleWebhookCreateUser = async ({
+  email,
+  clerkUserId,
+  firstName,
+  lastName,
+  system_role,
+}: CreateUser) => {
+  let db = client.mutation(api.user.createUser, {
+    email,
+    clerkUserId,
+    firstName,
+    lastName,
+    system_role,
+  });
 
-//   if (!record.data) {
-//     return {
-//       message: "No file was found.",
-//       decryptedText: null,
-//     };
-//   }
-// };
+  return db;
+};

@@ -1,13 +1,13 @@
 {
   // You can specify your own include/exclude
-  "include": ["."],
+  "include": [".", "../ui/types/index.ts"],
   "exclude": ["node_modules"],
   "compilerOptions": {
     "outDir": "./dist",
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "target": "ES2016",
-    "module": "CommonJS",
+    "target": "ES2020",
+    "module": "commonjs",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "strict": true,

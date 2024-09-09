@@ -1,5 +1,8 @@
 {
   "name": "convex-hackathon",
+  "scripts": {
+    "ui:dev": "turbo run dev --filter ui"
+  },
   "dependencies": {
     "dotenv-cli": "^7.3.0",
     "turbo": "latest"

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useUser } from "@clerk/nextjs";
+import Image from "next/image";
 
 function Component() {
   return (
@@ -77,8 +77,7 @@ function Component() {
                   </Link>
                 </div>
               </div>
-              <img
-                // src="/placeholder.svg"
+              <Image
                 src="https://generated.vusercontent.net/placeholder.svg"
                 width="550"
                 height="550"
@@ -106,8 +105,7 @@ function Component() {
               </div>
             </div>
             <div className="mx-auto grid max-w-5xl items-center gap-6 py-12 lg:grid-cols-2 lg:gap-12">
-              <img
-                // src="/placeholder.svg"
+              <Image
                 src="https://generated.vusercontent.net/placeholder.svg"
                 width="550"
                 height="310"
