@@ -108,7 +108,7 @@ HELLO="development"
 # Enjoy. 🌴
 OPEN_AI_API_KEY="19225"`;
 
-export function VariablePage() {
+function VariablePage() {
   const params = useSearchParams();
   const uniqueProjectId = params.get("pid");
   const projectLabel = params.get("label");

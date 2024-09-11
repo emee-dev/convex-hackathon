@@ -48,7 +48,7 @@ const sideBarLinks = [
   },
 ];
 
-export function DashboardLayout({
+function DashboardLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;

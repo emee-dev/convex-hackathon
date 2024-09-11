@@ -185,7 +185,7 @@ const columns: ColumnDef<ENVs>[] = [
   })),
 ];
 
-export function Dashboard() {
+function Dashboard() {
   // const data = getData();
   const data = rows;
   return (

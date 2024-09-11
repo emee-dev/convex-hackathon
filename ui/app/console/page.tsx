@@ -31,7 +31,7 @@ type Project = {
   maintainedByClerkUserId: string;
 };
 
-export function Dashboard() {
+function Dashboard() {
   const { isSignedIn, user, isLoaded } = useUser();
   const [projects, setProjects] = useState<Project[]>([]);
 
