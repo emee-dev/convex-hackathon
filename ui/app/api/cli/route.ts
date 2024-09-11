@@ -12,8 +12,6 @@ let requestBodySchema = z.object({
   uniqueProjectId: z.string().min(1, "Please provide the project id."),
 });
 
-export const FRONTEND_URL = process.env.FRONTEND_URL;
-
 const clerkClient = createClerkClient({
   secretKey: process.env.CLERK_SECRET_KEY,
 });
