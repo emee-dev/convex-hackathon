@@ -1,7 +1,7 @@
 "use client";
 
-import { notFound, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { useUser } from "@clerk/nextjs";
 import {
   CheckCircle,
   Fingerprint,
@@ -9,10 +9,9 @@ import {
   PartyPopper,
   XCircle,
 } from "lucide-react";
+import { notFound, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 // import toast, { Toaster } from "react-hot-toast";
-
-import { Button } from "@/components/ui/button";
-import { useAuth, useUser } from "@clerk/nextjs";
 
 function CodeCharacter({ char }: { char: string }) {
   return (
@@ -72,18 +71,30 @@ type VerifyProps = {
   uniqueProjectId: string | null;
 };
 
-export default function Page() {
+type PageProps = {
+  params: {};
+  searchParams: {
+    code: string | null;
+    redirect: string | null;
+    pid: string | null;
+  };
+};
+
+function CLIAuthenticationPage({ searchParams }: PageProps) {
+  console.log("CLI Page: ", searchParams);
+  // const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [cancelled, setCancelled] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  const searchParams = useSearchParams();
-
   const { user, isLoaded, isSignedIn } = useUser();
 
-  const _code = searchParams.get("code");
-  const _redirect = searchParams.get("redirect");
-  const _projectId = searchParams.get("pid");
+  // const _code = searchParams.get("code");
+  // const _redirect = searchParams.get("redirect");
+  // const _projectId = searchParams.get("pid");
+  const _code = searchParams.code;
+  const _redirect = searchParams.redirect;
+  const _projectId = searchParams.pid;
 
   // useEffect(() => {
   //   if (user && isLoaded && isSignedIn) {
@@ -185,51 +196,56 @@ export default function Page() {
   }
 
   return (
-    <div className="w-full min-h-screen flex items-center justify-center px-4 flex-col">
-      {/* <Toaster /> */}
-      <div className="flex flex-col">
-        <div className="flex ">
-          <div className="flex items-center justify-center pr-4">
-            <Fingerprint className="text-gray-100" />
+    // TODO add a proper loading to this suspense boundary.
+    <Suspense fallback={<>Loading page please wait.</>}>
+      <div className="w-full min-h-screen flex items-center justify-center px-4 flex-col">
+        {/* <Toaster /> */}
+        <div className="flex flex-col">
+          <div className="flex ">
+            <div className="flex items-center justify-center pr-4">
+              <Fingerprint className="text-gray-100" />
+            </div>
+            <div className="flex-col">
+              <h1 className="text-lg text-gray-100">Device confirmation</h1>
+              <p className="text-sm text-gray-500">
+                Please confirm this is the code shown in your terminal
+              </p>
+            </div>
           </div>
-          <div className="flex-col">
-            <h1 className="text-lg text-gray-100">Device confirmation</h1>
-            <p className="text-sm text-gray-500">
-              Please confirm this is the code shown in your terminal
-            </p>
-          </div>
-        </div>
-        <div>
-          <div className="grid grid-flow-col gap-1 pt-6 leading-none text-white lg:gap-3 auto-cols-auto">
-            {_code
-              ?.split("")
-              .map((char, i) => (
-                <CodeCharacter char={char} key={`${char}-${i}`} />
-              ))}
-          </div>
-          <div className="flex justify-center pt-6">
-            <div className="flex items-center">
-              <Button
-                variant="default"
-                className="mr-2"
-                onClick={() => verify(opts)}
-                disabled={loading}
-              >
-                {loading ? (
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                ) : (
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                )}
-                Confirm code
-              </Button>
-              <Button variant="outline" onClick={() => cancel()}>
-                <XCircle className="w-4 h-4 mr-2" />
-                Cancel
-              </Button>
+          <div>
+            <div className="grid grid-flow-col gap-1 pt-6 leading-none text-white lg:gap-3 auto-cols-auto">
+              {_code
+                ?.split("")
+                .map((char, i) => (
+                  <CodeCharacter char={char} key={`${char}-${i}`} />
+                ))}
+            </div>
+            <div className="flex justify-center pt-6">
+              <div className="flex items-center">
+                <Button
+                  variant="default"
+                  className="mr-2"
+                  onClick={() => verify(opts)}
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                  )}
+                  Confirm code
+                </Button>
+                <Button variant="outline" onClick={() => cancel()}>
+                  <XCircle className="w-4 h-4 mr-2" />
+                  Cancel
+                </Button>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </Suspense>
   );
 }
+
+export default CLIAuthenticationPage;

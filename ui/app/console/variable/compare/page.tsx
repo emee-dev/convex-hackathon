@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,23 +12,8 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-
-import "@uiw/react-textarea-code-editor/dist.css";
-import {
-  ArrowDownIcon,
-  ArrowUpIcon,
-  ChevronDown,
-  Cigarette,
-  CreditCard,
-  Eye,
-  FilePenLine,
-  Keyboard,
-  ListChecks,
-  Settings,
-  User,
-} from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -36,10 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { cn } from "@/lib/utils";
 import {
-  CellContext,
-  Column,
   ColumnDef,
   ColumnFiltersState,
   flexRender,
@@ -52,9 +35,16 @@ import {
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table";
-import Link from "next/link";
-import { ReactNode, useState } from "react";
-import { Input } from "@/components/ui/input";
+import "@uiw/react-textarea-code-editor/dist.css";
+import {
+  ChevronDown,
+  CreditCard,
+  Keyboard,
+  ListChecks,
+  Settings,
+  User,
+} from "lucide-react";
+import { useState } from "react";
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
@@ -72,29 +62,29 @@ export type Environment = {
   production: string;
 };
 
-function getData(): Payment[] {
-  // Fetch data from your API here.
-  return [
-    {
-      id: "728ed52f",
-      amount: 100,
-      status: "pending",
-      email: "m@example.com",
-    },
-    {
-      id: "489e1d42",
-      amount: 125,
-      status: "processing",
-      email: "example@gmail.com",
-    },
-    {
-      id: "728ed52f",
-      amount: 100,
-      status: "pending",
-      email: "m@example.com",
-    },
-  ];
-}
+// function getData(): Payment[] {
+//   // Fetch data from your API here.
+//   return [
+//     {
+//       id: "728ed52f",
+//       amount: 100,
+//       status: "pending",
+//       email: "m@example.com",
+//     },
+//     {
+//       id: "489e1d42",
+//       amount: 125,
+//       status: "processing",
+//       email: "example@gmail.com",
+//     },
+//     {
+//       id: "728ed52f",
+//       amount: 100,
+//       status: "pending",
+//       email: "m@example.com",
+//     },
+//   ];
+// }
 
 // also collapse the environments
 let rows = [
@@ -267,61 +257,61 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
 }
 
-interface DataTableColumnHeaderProps<TData, TValue>
-  extends React.HTMLAttributes<HTMLDivElement> {
-  column: Column<TData, TValue>;
-  title: string;
-}
+// interface DataTableColumnHeaderProps<TData, TValue>
+//   extends React.HTMLAttributes<HTMLDivElement> {
+//   column: Column<TData, TValue>;
+//   title: string;
+// }
 
-export function DataTableColumnHeader<TData, TValue>({
-  column,
-  title,
-  className,
-}: DataTableColumnHeaderProps<TData, TValue>) {
-  if (!column.getCanSort()) {
-    return <div className={cn(className)}>{title}</div>;
-  }
+// export function DataTableColumnHeader<TData, TValue>({
+//   column,
+//   title,
+//   className,
+// }: DataTableColumnHeaderProps<TData, TValue>) {
+//   if (!column.getCanSort()) {
+//     return <div className={cn(className)}>{title}</div>;
+//   }
 
-  return (
-    <div className={cn("flex items-center space-x-2", className)}>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="-ml-3 h-8 data-[state=open]:bg-accent"
-          >
-            <span>{title}</span>
-            {column.getIsSorted() === "desc" ? (
-              <ArrowDownIcon className="ml-2 h-4 w-4" />
-            ) : column.getIsSorted() === "asc" ? (
-              <ArrowUpIcon className="ml-2 h-4 w-4" />
-            ) : (
-              <Cigarette className="ml-2 h-4 w-4" />
-            )}
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start">
-          <DropdownMenuItem onClick={() => column.toggleSorting(false)}>
-            <ArrowUpIcon className="mr-2 h-3.5 w-3.5 text-muted-foreground/70" />
-            Asc
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => column.toggleSorting(true)}>
-            <ArrowDownIcon className="mr-2 h-3.5 w-3.5 text-muted-foreground/70" />
-            Desc
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => column.toggleVisibility(false)}>
-            <Eye className="mr-2 h-3.5 w-3.5 text-muted-foreground/70" />
-            Hide
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
-  );
-}
+//   return (
+//     <div className={cn("flex items-center space-x-2", className)}>
+//       <DropdownMenu>
+//         <DropdownMenuTrigger asChild>
+//           <Button
+//             variant="ghost"
+//             size="sm"
+//             className="-ml-3 h-8 data-[state=open]:bg-accent"
+//           >
+//             <span>{title}</span>
+//             {column.getIsSorted() === "desc" ? (
+//               <ArrowDownIcon className="ml-2 h-4 w-4" />
+//             ) : column.getIsSorted() === "asc" ? (
+//               <ArrowUpIcon className="ml-2 h-4 w-4" />
+//             ) : (
+//               <Cigarette className="ml-2 h-4 w-4" />
+//             )}
+//           </Button>
+//         </DropdownMenuTrigger>
+//         <DropdownMenuContent align="start">
+//           <DropdownMenuItem onClick={() => column.toggleSorting(false)}>
+//             <ArrowUpIcon className="mr-2 h-3.5 w-3.5 text-muted-foreground/70" />
+//             Asc
+//           </DropdownMenuItem>
+//           <DropdownMenuItem onClick={() => column.toggleSorting(true)}>
+//             <ArrowDownIcon className="mr-2 h-3.5 w-3.5 text-muted-foreground/70" />
+//             Desc
+//           </DropdownMenuItem>
+//           <DropdownMenuSeparator />
+//           <DropdownMenuItem onClick={() => column.toggleVisibility(false)}>
+//             <Eye className="mr-2 h-3.5 w-3.5 text-muted-foreground/70" />
+//             Hide
+//           </DropdownMenuItem>
+//         </DropdownMenuContent>
+//       </DropdownMenu>
+//     </div>
+//   );
+// }
 
-export function DataTable<TData, TValue>({
+function DataTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {

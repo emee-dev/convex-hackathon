@@ -44,7 +44,7 @@ let pullSchema = z.object({
   clerkUserId: z.string().min(1),
 });
 
-export const revalidate = 500;
+export const dynamic = "force-dynamic";
 
 // cli user Authentication
 export const GET = async (req: Request) => {

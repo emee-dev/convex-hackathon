@@ -1,19 +1,13 @@
-import { NextResponse } from "next/server";
-import { __getUserProject } from "./handler";
-import { roles } from "@/types";
-import { createClerkClient } from "@clerk/backend";
-import { z } from "zod";
 import { formatZodError } from "@/lib/utils";
+import { z } from "zod";
+import { __getUserProject } from "./handler";
+import { clerkClient } from "@/const";
 
 let requestBodySchema = z.object({
   code: z.string().min(1, "This is not a cli workflow. Use the cli."),
   redirect: z.string().min(1, "Please provide the cli redirect url."),
   clerkUserId: z.string().min(1, "Please login on the webapp to continue."),
   uniqueProjectId: z.string().min(1, "Please provide the project id."),
-});
-
-const clerkClient = createClerkClient({
-  secretKey: process.env.CLERK_SECRET_KEY,
 });
 
 // Handle CLI init command
