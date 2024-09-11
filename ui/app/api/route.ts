@@ -2,7 +2,7 @@
 // import { roles } from "@/types";
 // import { createClerkClient } from "@clerk/backend";
 
-export const FRONTEND_URL = process.env.FRONTEND_URL;
+// export const FRONTEND_URL = process.env.FRONTEND_URL;
 
 // const clerkClient = createClerkClient({
 //   secretKey: process.env.CLERK_SECRET_KEY,
