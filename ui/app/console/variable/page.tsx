@@ -46,6 +46,7 @@ import { notFound, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import Loader from "./loading";
 import { Textarea } from "@/components/ui/textarea";
+import { decryptInDashboard } from "./actions";
 const CodeEditor = dynamic(() => import("@/components/CodeEditor/editor"), {
   ssr: false,
   loading: () => <Loader />,
@@ -115,20 +116,24 @@ function VariablePage() {
   const [showDocsPanel, setShowDocsPanel] = useState<boolean>(true);
 
   // encrypted content
-  // let envFileContent = useQuery(
-  //   api.env.getEnvByFileName,
-  //   uniqueProjectId
-  //     ? {
-  //         fileName: defaultKeyMapping[currentEnvironment] || "",
-  //         projectId: uniqueProjectId,
-  //       }
-  //     : "skip"
-  // );
-  let envFileContent = useQuery(api.env.getEnvByFileName, "skip");
+  let envFileContent = useQuery(
+    api.env.getEnvByFileName,
+    uniqueProjectId
+      ? {
+          fileName: defaultKeyMapping[currentEnvironment] || "",
+          projectId: uniqueProjectId,
+        }
+      : "skip"
+  );
 
   useEffect(() => {
     let decryptedContent = async () => {
-      if (!envFileContent || !envFileContent.data || !uniqueProjectId) {
+      if (
+        !envFileContent ||
+        !envFileContent.data ||
+        !uniqueProjectId ||
+        !user
+      ) {
         console.error("Error loading environment file content.");
         setContentVersion("8s9mx7");
         setEditorContent(env);
@@ -137,23 +142,23 @@ function VariablePage() {
 
       let fileName = defaultKeyMapping[currentEnvironment] || "";
       let encryptedData = envFileContent.data.encryptedData;
-      let version = envFileContent.data.version;
+      let edit_version = envFileContent.data.version;
       let clerkUserId = user?.id!;
 
       if (!fileName) {
         console.warn(`Environment ${fileName} does not exist.`);
       }
 
-      // let data = await decryptInDashboard({
-      //   fileName,
-      //   clerkUserId,
-      //   encryptedData,
-      //   uniqueProjectId,
-      // }).catch((e) => {
-      //   // TODO display appropriate toast
-      //   console.log(e.message);
-      // });
-      let data = "";
+      let data = await decryptInDashboard({
+        fileName,
+        clerkUserId,
+        edit_version,
+        encryptedData,
+        uniqueProjectId,
+      }).catch((e) => {
+        // TODO display appropriate toast
+        console.log(e.message);
+      });
 
       if (!data) {
         console.warn("No data");
@@ -161,7 +166,7 @@ function VariablePage() {
       }
 
       setEditorContent(data);
-      setContentVersion(version);
+      setContentVersion(edit_version);
     };
 
     decryptedContent();
@@ -209,13 +214,7 @@ function VariablePage() {
         {/* {showDocsPanel && (
           <div className="flex items-center gap-x-4 mt-4">
             <Card className="outline-neutral-400 min-h-12 p-2 flex-1 outline outline-1">
-              This will be the asnca husamsk saos cyasb sattshc cajsjs This will
-              be the asnca husamsk saos cyasb sattshc cajsjs This will be the
-              asnca husamsk saos cyasb sattshc cajsjs This will be the asnca
-              husamsk saos cyasb sattshc cajsjs This will be the asnca husamsk
-              saos cyasb sattshc cajsjs This will be the asnca husamsk saos
-              cyasb sattshc cajsjs This will be the asnca husamsk saos cyasb
-              sattshc cajsjs
+              This will be
             </Card>
             <X
               strokeWidth={2}
@@ -238,16 +237,7 @@ function VariablePage() {
               </CodeEditorHeader>
             </CardHeader>
             <CardContent className="flex min-h-[450px] pt-6">
-              <CodeEditor
-                // editable={editable}
-                // content={editorContent}
-                handleClick={handleVariableClick}
-              />
-              {/* <CodeEditor
-                editable={editable}
-                handleClick={handleVariableClick}
-                content={editorContent}
-              /> */}
+              <CodeEditor handleClick={handleVariableClick} />
             </CardContent>
           </Card>
 
@@ -333,7 +323,7 @@ function ChatSupport({ alias }: { alias: string }) {
           {messages.map((item) => {
             if (item.role === "user")
               return (
-                <ChatBubble>
+                <ChatBubble key={crypto.randomUUID()}>
                   <ChatBubbleAvatar fallback={<User />} />
                   <ChatBubbleMessage>{item.content}</ChatBubbleMessage>
                 </ChatBubble>
@@ -341,7 +331,7 @@ function ChatSupport({ alias }: { alias: string }) {
 
             if (item.role === "assistant")
               return (
-                <ChatBubble className="ml-auto">
+                <ChatBubble className="ml-auto" key={crypto.randomUUID()}>
                   <ChatBubbleAvatar src={robotImg(300)} />
                   <ChatBubbleMessage>{item.content}</ChatBubbleMessage>
                 </ChatBubble>

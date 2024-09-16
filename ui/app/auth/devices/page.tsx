@@ -190,7 +190,7 @@ function CLIAuthenticationPage({ searchParams }: PageProps) {
       loginRedirect();
       setLoggedIn(false);
     }
-  }, [isSignedIn, user, isLoaded]);
+  }, [isSignedIn, user, isLoaded, _redirect]);
 
   if (!_code || !_redirect || !_projectId) {
     return notFound();
@@ -310,7 +310,7 @@ function IsNotLoggedIn({
       location.push("/sign-in");
     }
     return () => clearInterval(timer);
-  }, [countdown, loggedIn]);
+  }, [countdown, loggedIn, location]);
 
   return (
     <Card className="w-full max-w-md mx-auto">

@@ -75,13 +75,13 @@ export default function ChatBottombar({ isMobile }: ChatBottombarProps) {
     }
   };
 
-  const formattedTime = new Date().toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  });
-
   useEffect(() => {
+    const formattedTime = new Date().toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+
     if (inputRef.current) {
       inputRef.current.focus();
     }

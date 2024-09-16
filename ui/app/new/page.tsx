@@ -78,10 +78,6 @@ const Dashboard = ({ searchParams }: DashboardProps) => {
   const projectLabel = searchParams.label;
   const [view, setView] = useState<DashboardView>("all");
 
-  if (!uniqueProjectId || !projectLabel) {
-    return notFound();
-  }
-
   // TODO deligate the request by making sure the tab is active before fetching data.
   let {
     results: variables,
@@ -132,6 +128,10 @@ const Dashboard = ({ searchParams }: DashboardProps) => {
       : "skip",
     { initialNumItems: 5 }
   );
+
+  if (!uniqueProjectId || !projectLabel) {
+    return notFound();
+  }
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/80">
@@ -407,7 +407,7 @@ const Dashboard = ({ searchParams }: DashboardProps) => {
                       <TableLoading />
                     ) : integrations.length > 0 ? (
                       integrations.map((item) => (
-                        <TableRow>
+                        <TableRow key={item._id}>
                           <TableCell>{item.label}</TableCell>
                           <TableCell>
                             <DropdownMenu>
@@ -617,7 +617,7 @@ const CreateInvitation = () => {
                         {listRoles && listRoles.length > 0
                           ? listRoles.map((item) => {
                               return (
-                                <SelectItem value={item.code}>
+                                <SelectItem value={item.code} key={item._id}>
                                   {item.name}
                                 </SelectItem>
                               );

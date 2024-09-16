@@ -1,15 +1,14 @@
 "use client";
 
+import { decryptInDashboard } from "@/app/console/variable/actions";
 import { CodeEditorHeader, useCodeEditor } from "@/components/CodeEditor";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { useChat } from "ai/react";
 import {
   ChatBubble,
   ChatBubbleAvatar,
   ChatBubbleMessage,
 } from "@/components/ui/chat/chat-bubble";
-import { ChatInput } from "@/components/ui/chat/chat-input";
 import { ChatMessageList } from "@/components/ui/chat/chat-message-list";
 import {
   ExpandableChat,
@@ -18,15 +17,6 @@ import {
   ExpandableChatHeader,
 } from "@/components/ui/chat/expandable-chat";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import {
   Tooltip,
@@ -35,19 +25,17 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { api } from "@/convex/_generated/api";
-import { defaultKeyMapping } from "@/types";
+import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@clerk/nextjs";
 import "@uiw/react-textarea-code-editor/dist.css";
-import { useMutation, useQuery } from "convex/react";
-import { ListChecks, Loader2, Send, User, X } from "lucide-react";
+import { useChat } from "ai/react";
+import { useQuery } from "convex/react";
+import { ListChecks, Loader2, Send, User } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { notFound, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { notFound } from "next/navigation";
+import { useEffect, useState } from "react";
 import Loader from "./loading";
-import { Textarea } from "@/components/ui/textarea";
-import { decryptInDashboard } from "@/app/console/variable/actions";
-import { useToast } from "@/hooks/use-toast";
 const CodeEditor = dynamic(() => import("@/components/CodeEditor/editor"), {
   ssr: false,
   loading: () => <Loader />,
@@ -58,8 +46,6 @@ type EnvironmentComponentProps = {
     label: string;
     component: JSX.Element;
   }[];
-  // currentEnvironment: string;
-  // setCurrentEnvironment: (value: string) => void;
 };
 
 const environments = [
@@ -120,10 +106,6 @@ function VariablePage({ searchParams }: DashboardProps) {
   const { toast } = useToast();
   const { setVersion, setEditorContent } = useCodeEditor();
 
-  if (!projectLabel || !uniqueProjectId || !fileName) {
-    return notFound();
-  }
-
   const { isLoaded, isSignedIn, user } = useUser();
 
   const [showDocsPanel, setShowDocsPanel] = useState<boolean>(true);
@@ -159,6 +141,7 @@ function VariablePage({ searchParams }: DashboardProps) {
 
       if (!fileName) {
         console.warn(`Environment ${fileName} does not exist.`);
+        return;
       }
 
       let data = await decryptInDashboard({
@@ -195,7 +178,7 @@ function VariablePage({ searchParams }: DashboardProps) {
     decryptedContent();
   }, [envFileContent, uniqueProjectId, isLoaded, isSignedIn, user, fileName]);
 
-  if (!uniqueProjectId || !projectLabel) {
+  if (!projectLabel || !uniqueProjectId || !fileName) {
     return notFound();
   }
 
@@ -306,7 +289,7 @@ function ChatSupport({ alias }: { alias: string }) {
           {messages.map((item) => {
             if (item.role === "user")
               return (
-                <ChatBubble>
+                <ChatBubble key={crypto.randomUUID()}>
                   <ChatBubbleAvatar fallback={<User />} />
                   <ChatBubbleMessage>{item.content}</ChatBubbleMessage>
                 </ChatBubble>
@@ -314,7 +297,7 @@ function ChatSupport({ alias }: { alias: string }) {
 
             if (item.role === "assistant")
               return (
-                <ChatBubble className="ml-auto">
+                <ChatBubble className="ml-auto" key={crypto.randomUUID()}>
                   <ChatBubbleAvatar src={robotImg(300)} />
                   <ChatBubbleMessage>{item.content}</ChatBubbleMessage>
                 </ChatBubble>
