@@ -13,6 +13,12 @@ export type PullRequest = {
   clerkUserId: string;
 };
 
+export type CIPullRequest = {
+  fileName: string;
+  projectId: string;
+  apiKey: string;
+};
+
 export type UserConfig = {
   code: string;
   email: string;

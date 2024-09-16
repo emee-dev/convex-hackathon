@@ -52,9 +52,9 @@ export const encryptContent = async ({
   const iv = formatter.ivToBase64(encryptedText.iv);
 
   // Important
-  let encryptionKey = await deriveEncryptionKeyFromCryptoKey(
+  let encryptionKey = (await deriveEncryptionKeyFromCryptoKey(
     encryptedText.cryptoKey
-  );
+  )) as string;
 
   return {
     privateKey: `pkey_${iv}.${encryptionKey}`,
@@ -112,6 +112,7 @@ export const __pullLatestChanges = async ({
 export const __pushChanges = async ({
   path,
   version,
+  message,
   fileName,
   projectId,
   clerkUserId,
@@ -119,13 +120,14 @@ export const __pushChanges = async ({
 }: {
   path: string;
   version: string;
+  message: string;
   fileName: string;
   projectId: string;
   clerkUserId: string;
   encryptedData: string;
 }) => {
   const data = await client.mutation(api.env.storeEnvFile, {
-    env: { version, path, fileName, encryptedData, projectId },
+    env: { version, path, fileName, encryptedData, projectId, message },
     user: { clerkUserId },
   });
 

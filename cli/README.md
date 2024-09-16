@@ -169,7 +169,7 @@ To configure `@dxenv/cli` for local development, follow these steps:
 
 1. **Set Up Environment Variables**
 
-   Create a `.env.local` file in your project directory based on the `.env.example` file. Ensure you include the `FRONTEND_URL` variable:
+   Create a `.env.local` file in the cli workspace based on the `.env.example` file. Ensure you include the `FRONTEND_URL` variable:
 
    ```env
    FRONTEND_URL=http://localhost:3000
@@ -177,7 +177,7 @@ To configure `@dxenv/cli` for local development, follow these steps:
 
 2. **Build Script**
 
-   When building `@dxenv/cli`, make sure `FRONTEND_URL` is included in the build. The following `tsup` build script ensures the `FRONTEND_URL` environment variable is correctly replaced during the build process:
+   When building `@dxenv/cli`, make sure `FRONTEND_URL` variable is included in the build. The following `tsup` build script ensures the `FRONTEND_URL` environment variable is correctly replaced during the build process:
 
    ```typescript
    import { defineConfig } from "tsup";

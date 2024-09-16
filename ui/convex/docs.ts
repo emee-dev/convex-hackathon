@@ -1,81 +1,70 @@
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { v } from "convex/values";
-import { action, internalMutation, mutation } from "./_generated/server";
 import { internal } from "./_generated/api";
+import { Doc } from "./_generated/dataModel";
+import { action, internalMutation, query } from "./_generated/server";
+import { embed } from "./inngest/load";
 
-export const generateEmbedding = action({
+export const searchEmbeddings = action({
   args: {
     fileName: v.string(),
     descriptionQuery: v.string(),
   },
   handler: async (ctx, { fileName, descriptionQuery }) => {
-    // 1. Generate an embedding from you favorite third party API:
     const embedding = await embed(descriptionQuery);
-
-    let data = await ctx.runMutation(internal.docs.insertDocs, {
-      fileName,
-      embedding: embedding,
-      descriptionQuery,
-    });
-
-    console.log("data", data);
-  },
-});
-
-export const insertDocs = internalMutation({
-  args: {
-    fileName: v.string(),
-    embedding: v.array(v.float64()),
-    descriptionQuery: v.string(),
-  },
-  handler: async (ctx, { descriptionQuery, embedding, fileName }) => {
-    let data = await ctx.db.insert("docs", {
-      body: descriptionQuery,
-      embedding,
-      fileName,
-    });
-
-    return { data: "Data was added." };
-  },
-});
-
-export const getSimilarDocs = action({
-  args: {
-    descriptionQuery: v.string(),
-  },
-  handler: async (ctx, args) => {
-    // 1. Generate an embedding from you favorite third party API:
-    const embedding = await embed(args.descriptionQuery);
 
     // 2. Then search for similar foods!
     const results = await ctx.vectorSearch("docs", "by_embedding", {
       vector: embedding,
       limit: 16,
-      filter: (q) => q.eq("fileName", ".env.local"),
+      filter: (q) => q.eq("fileName", fileName),
     });
 
-    return { data: results };
+    let final = (await ctx.runMutation(internal.docs.resolveDocs, {
+      results,
+    })) as Doc<"docs">[];
+
+    return final;
   },
 });
 
-async function embed(text: string): Promise<number[]> {
-  const req = { input: text };
+export const resolveDocs = internalMutation({
+  args: {
+    results: v.array(
+      v.object({
+        _id: v.id<"docs">("docs"),
+        _score: v.number(),
+      })
+    ),
+  },
+  handler: async (ctx, { results }) => {
+    return await Promise.all(
+      results
+        .map(async (item) => {
+          let doc = await ctx.db.get(item._id);
 
-  const resp = await fetch(`${process.env.BACKEND_URL}/api/env/vectors`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(req),
-  });
+          return doc;
+        })
+        .filter(Boolean)
+    );
+  },
+});
 
-  if (!resp.ok) {
-    const msg = await resp.text();
-    throw new Error(`Vector API error: ${msg}`);
-  }
+export const searchDocumentByFileName = query({
+  args: {
+    fileName: v.string(),
+  },
 
-  const json = await resp.json();
-  const vector = json.data as number[];
+  handler: async (ctx, { fileName }) => {
+    let doc = await ctx.db
+      .query("docs")
+      .filter((q) => q.eq(q.field("fileName"), fileName))
+      .first();
 
-  console.log(`Computed embedding of "${text}": ${vector.length} dimensions`);
-  return vector;
-}
+    if (!doc) {
+      return null;
+    }
+
+    return { id: doc._id, document: doc.body, createdAt: doc._creationTime };
+  },
+});

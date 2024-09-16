@@ -1,36 +1,95 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+This is a convex hackathon project which is a monorepo setup and the following includes setup guides.
 
 ## Getting Started
 
-First, run the development server:
+Git clone the project repo
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Pull repo
+git clone https://github.com/emee-dev/convex-hackathon.git
+
+# cd folder directory
+cd convex-hackathon
+
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Install dependancies
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+You can probably use any package manager of your choice, but pnpm is recommended.
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+```bash
 
-## Learn More
+npm install -g pnpm
 
-To learn more about Next.js, take a look at the following resources:
+# Install packages
+pnpm install
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+## Folder structure
 
-## Deploy on Vercel
+- **/cli:** the cli workspace includes all the code required to build and run the cli.
+- **/ui:** The UI workspace includes the Next js code required to start the webapp.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Environment variables in UI workspace
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+Please copy the files in `.env.example` to `.env.local`. The following technologies were used in so please register and get the required keys.
+
+- **Convex DB:** https://dashboard.convex.dev/
+- **Gemini LLM:** https://aistudio.google.com/app/apikey
+- **Clerk Auth:** https://dashboard.clerk.com/apps/
+- **Upstash Redis:** https://console.upstash.com/redis/
+
+## CLI Setup and Usage
+
+To be able to push and pull environment variables, it is important to do the following. Since the npm package has not yet been upload to npm. In the CLI workspace, copy `.env.example` to `.env.local`.
+
+```bash
+# cd cli folder
+cd cli
+
+# build workspace
+pnpm build
+
+# install cli globally on your machine
+pnpm link --global
+
+# check if it was installed
+dx --version # or dxenv --version
+
+# Login with command (will open in default browser)
+dx login --open
+
+# Usage:
+# create project on the webapp
+# copy project config from webapp and
+# paste config into the project directory
+
+# Configure alias or use --skip flag to use default mapping
+dx push local --skip
+
+# Goto dashboard and to see the changes
+# under the newly created project
+
+# Pull environment variables into the process
+# Optionally generate types using -ts flag
+dx pull local --skip
+
+```
+
+The following is the default environment name or profile alias mapping. Be sure the file exists in the folder when you run the command.
+
+```ts
+export const defaultKeyMapping: Record<string, string> = {
+  development: ".env",
+  local: ".env.local",
+  production: ".env.production",
+  ci: ".env.ci",
+  staging: ".env.staging",
+  test: ".env.test",
+} as const;
+```
+
+## Live deployment
+
+The project is deployed on vercel. You can preview a demo here (on vercel)[https://convex-hackathon-pi.vercel.app/]

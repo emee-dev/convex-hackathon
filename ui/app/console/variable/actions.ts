@@ -8,11 +8,13 @@ import { allowedActions, extractIvAndKey } from "@/lib/utils";
 export const decryptInDashboard = async ({
   fileName,
   clerkUserId,
+  edit_version,
   encryptedData,
   uniqueProjectId,
 }: {
   fileName: string;
   clerkUserId: string;
+  edit_version: string;
   encryptedData: string;
   uniqueProjectId: string;
 }) => {
@@ -35,6 +37,7 @@ export const decryptInDashboard = async ({
 
   let cachedKey = await getEncryptedPrivateKey({
     fileName,
+    edit_version,
     projectId: uniqueProjectId,
   });
 

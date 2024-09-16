@@ -1,4 +1,4 @@
-Ven (from env) is a platform agnostic tool that helps teams properly share 🤝 and manage environment variables in realtime securely while adhering to environment variable management best practices. It utilizes the best encryption methods and by utilizing clerk auth it allows teams to worryless about their environments and also be able to onboard team members easily. It provides the best developer experience by addressing the following 👋:
+Dxenv is a platform-agnostic tool that enables teams to securely share 🤝 and manage environment variables in real-time, while adhering to best practices for environment variable management. It utilizes the best encryption methods and by utilizing clerk auth it allows teams to worryless about their environments and also be able to onboard team members easily. It provides the best developer experience by addressing the following 👋:
 
 - Stream realtime changes to the dashboard via Convex and Next js actions securely 🙌.
 - CLI authentication with auth provider using webapp to proxy backend server.

@@ -31,15 +31,14 @@ type Project = {
   maintainedByClerkUserId: string;
 };
 
-function Dashboard() {
+const Dashboard = () => {
   const { isSignedIn, user, isLoaded } = useUser();
   const [projects, setProjects] = useState<Project[]>([]);
 
-  // let getProjects = useQuery(
-  //   api.project.listProjects,
-  //   user && isLoaded && isSignedIn ? { clerkUserId: user.id } : "skip"
-  // );
-  let getProjects = useQuery(api.project.listProjects, "skip");
+  let getProjects = useQuery(
+    api.project.listProjects,
+    user && isLoaded && isSignedIn ? { clerkUserId: user.id } : "skip"
+  );
 
   useEffect(() => {
     if (getProjects && getProjects.data) {
@@ -57,7 +56,7 @@ function Dashboard() {
               Manage your projects and view their details.
             </p>
           </div>
-          <Link href={"/console/project/new"}>
+          <Link href={`/new/np`}>
             <Button size="sm">Add New Project</Button>
           </Link>
         </div>
@@ -74,7 +73,7 @@ function Dashboard() {
                         </div>
                         <div>
                           <Link
-                            href={`/console/variable?pid=${project.uniqueProjectId}&label=${encodeURIComponent(project.label)}`}
+                            href={`/new?pid=${project.uniqueProjectId}&label=${encodeURIComponent(project.label)}`}
                           >
                             <CardTitle className="text-xl hover:underline hover:underline-offset-4">
                               {project.label}
@@ -101,7 +100,7 @@ function Dashboard() {
       </div>
     </main>
   );
-}
+};
 
 function NoProjectError() {
   return (

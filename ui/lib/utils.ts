@@ -4,7 +4,8 @@ import ms from "ms";
 import { SafeParseError, z } from "zod";
 import { PrivateKey } from "./action";
 import { ConvexHttpClient } from "convex/browser";
-import { Permissions } from "@/types";
+import { defaultKeyMapping, Permissions } from "@/types";
+import { customAlphabet } from "nanoid";
 
 export const client = new ConvexHttpClient(
   process.env["NEXT_PUBLIC_CONVEX_URL"]!
@@ -61,3 +62,16 @@ export function allowedActions(
 
   return requiredPermissions.every((action) => userPermission.includes(action));
 }
+
+export const generateEditVersion = async (size: number = 8) => {
+  return customAlphabet("123456789QAZWSXEDCRFVTGBYHNUJMIKOLP", size)();
+};
+
+export const generateConfig = (projectId: string) => {
+  let config = {
+    projectId: `${projectId}`,
+    profiles: { ...defaultKeyMapping },
+  };
+
+  return JSON.stringify(config, null, 3);
+};

@@ -21,7 +21,7 @@
   "scripts": {
     "test": "",
     "dev": "dotenv -e .env.local -- tsx ./src/index.ts",
-    "build": "rm -rf ./dist && tsup",
+    "build": "rm -rf ./dist && dotenv -e .env.local tsup",
     "lint": "tsc"
   },
   "files": [

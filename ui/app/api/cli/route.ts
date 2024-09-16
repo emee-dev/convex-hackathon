@@ -10,6 +10,8 @@ let requestBodySchema = z.object({
   uniqueProjectId: z.string().min(1, "Please provide the project id."),
 });
 
+export const dynamic = "force-dynamic";
+
 // Handle CLI init command
 // Returns the list of projects created by user with clerkUserId.
 // Allows the user to choose, then writes the project id to config file.

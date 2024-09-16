@@ -19,3 +19,18 @@ export const __getUserRoleAndPermissions = async ({
 
   return data;
 };
+
+export const __getAPIKeyRoleAndPermissions = async ({
+  unkeyKeyId,
+  uniqueProjectId,
+}: {
+  uniqueProjectId: string;
+  unkeyKeyId: string;
+}) => {
+  let data = await client.query(api.integrations.apiKeyRoleAndPermissions, {
+    unkeyKeyId,
+    uniqueProjectId,
+  });
+
+  return data;
+};

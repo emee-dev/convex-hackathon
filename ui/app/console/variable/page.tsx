@@ -1,12 +1,23 @@
 "use client";
 
+import { CodeEditorHeader, useCodeEditor } from "@/components/CodeEditor";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { useChat } from "ai/react";
 import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from "@/components/ui/card";
+  ChatBubble,
+  ChatBubbleAvatar,
+  ChatBubbleMessage,
+} from "@/components/ui/chat/chat-bubble";
+import { ChatInput } from "@/components/ui/chat/chat-input";
+import { ChatMessageList } from "@/components/ui/chat/chat-message-list";
+import {
+  ExpandableChat,
+  ExpandableChatBody,
+  ExpandableChatFooter,
+  ExpandableChatHeader,
+} from "@/components/ui/chat/expandable-chat";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -16,7 +27,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import axios from "axios";
 import { Separator } from "@/components/ui/separator";
 import {
   Tooltip,
@@ -25,34 +35,18 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { api } from "@/convex/_generated/api";
-import useCopyToClipboard from "@/hooks/useCopyToClipboard";
+import { defaultKeyMapping } from "@/types";
+import { useUser } from "@clerk/nextjs";
 import "@uiw/react-textarea-code-editor/dist.css";
-import { useQuery } from "convex/react";
-import {
-  CheckCheck,
-  ClipboardList,
-  Eye,
-  EyeOff,
-  FilePenLine,
-  GitBranch,
-  ListChecks,
-  Minimize,
-  ToggleLeft,
-  ToggleRight,
-  User,
-  X,
-} from "lucide-react";
+import { useMutation, useQuery } from "convex/react";
+import { ListChecks, Loader2, Send, User, X } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { notFound, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Loader from "./loading";
-import { decryptInDashboard } from "./actions";
-import { defaultKeyMapping } from "@/types";
-import { useUser } from "@clerk/nextjs";
-// import EventEmitter from "events";
-import { Input } from "@/components/ui/input";
-const CodeEditor = dynamic(() => import("@/components/CodeEditor"), {
+import { Textarea } from "@/components/ui/textarea";
+const CodeEditor = dynamic(() => import("@/components/CodeEditor/editor"), {
   ssr: false,
   loading: () => <Loader />,
 });
@@ -62,8 +56,8 @@ type EnvironmentComponentProps = {
     label: string;
     component: JSX.Element;
   }[];
-  currentEnvironment: string;
-  setCurrentEnvironment: (value: string) => void;
+  // currentEnvironment: string;
+  // setCurrentEnvironment: (value: string) => void;
 };
 
 const environments = [
@@ -85,28 +79,27 @@ const environments = [
   },
 ];
 
-let env = `# development@v3
-HELLO="development"
+let env = `# dxenv CLI Usage
 
-#
-# Hi 👋, this is a real .env file.
-#
-# 1. Connect to it locally (one-time setup):
-#
-# $ cd ../path/to/testing
-# $ npx dotenv-vault@latest new vlt_27abd8ad8ea4513faa1c3954f667224953f94966aa636f803671e8e151b1303e
-#
-# 2. Pull it down:
-#
-# $ npx dotenv-vault@latest pull
-#
-# 3. Or push yours up:
-#
-# $ npx dotenv-vault@latest push
-#
-# 
-# Enjoy. 🌴
-OPEN_AI_API_KEY="19225"`;
+## Welcome to dxenv Vault!
+
+1. Connect Locally (One-Time Setup):
+
+$ cd /path/to/project
+$ npx @dxenv/cli login --open
+
+2. Pull Environment Variables:
+
+$ npx @dxenv/cli pull development
+
+3. Push Your Environment Variables:
+
+$ npx @dxenv/cli push production
+
+Enjoy managing your environment variables securely! 🌍
+
+Coming soon. See cli workspace for usage instructions.
+`;
 
 function VariablePage() {
   const params = useSearchParams();
@@ -120,8 +113,6 @@ function VariablePage() {
   const [visible, setVisible] = useState<boolean>(false);
   const [editable, setEditable] = useState<boolean>(false);
   const [showDocsPanel, setShowDocsPanel] = useState<boolean>(true);
-
-  // env.emit("click");
 
   // encrypted content
   // let envFileContent = useQuery(
@@ -180,7 +171,7 @@ function VariablePage() {
     return notFound();
   }
 
-  const handleClick = (args: any) => {
+  const handleVariableClick = (args: any) => {
     console.log("args", args);
   };
 
@@ -210,211 +201,70 @@ function VariablePage() {
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
-            <EnvironmentComponent
-              environments={environments}
-              currentEnvironment={currentEnvironment}
-              setCurrentEnvironment={setCurrentEnvironment}
-            />
+            <SelectEnvironment environments={environments} />
           </div>
         </div>
         <Separator orientation="vertical" />
-        {/* <div className="grid grid-cols-1 gap-y-2 sm:grid-cols-2 sm:gap-x-2 mt-5"> */}
-        <div className="grid relative gap-2 grid-cols-1 md:grid-cols-[repeat(auto-fit,minmax(390px,1fr))] mt-5">
+
+        {/* {showDocsPanel && (
+          <div className="flex items-center gap-x-4 mt-4">
+            <Card className="outline-neutral-400 min-h-12 p-2 flex-1 outline outline-1">
+              This will be the asnca husamsk saos cyasb sattshc cajsjs This will
+              be the asnca husamsk saos cyasb sattshc cajsjs This will be the
+              asnca husamsk saos cyasb sattshc cajsjs This will be the asnca
+              husamsk saos cyasb sattshc cajsjs This will be the asnca husamsk
+              saos cyasb sattshc cajsjs This will be the asnca husamsk saos
+              cyasb sattshc cajsjs This will be the asnca husamsk saos cyasb
+              sattshc cajsjs
+            </Card>
+            <X
+              strokeWidth={2}
+              className="size-5 transition ease-in-out delay-150 duration-300 hover:scale-150"
+              onClick={() => setShowDocsPanel(!showDocsPanel)}
+            />
+          </div>
+        )} */}
+
+        <div className="grid grid-cols-1 gap-y-2 mt-5">
+          {/* <div className="grid relative gap-2 grid-cols-1 md:grid-cols-[repeat(auto-fit,minmax(390px,1fr))] mt-5"> */}
           <Card className="outline-neutral-400 h-full flex-1 outline outline-1">
             <CardHeader className="bg-neutral-200 rounded-t-lg h-8 justify-center">
-              <CodeEditorHeader
-                visible={visible}
-                editable={editable}
-                version={contentVersion}
-                editorContent={editorContent}
-                setVisible={(state) => setVisible(state)}
-                setEditable={(state) => setEditable(state)}
-              />
+              <CodeEditorHeader>
+                <CodeEditorHeader.Version />
+                <CodeEditorHeader.EditToggle />
+                <CodeEditorHeader.CopyIcon />
+                <CodeEditorHeader.CompareIcon />
+                <CodeEditorHeader.VisibilityToggle />
+              </CodeEditorHeader>
             </CardHeader>
             <CardContent className="flex min-h-[450px] pt-6">
+              <CodeEditor
+                // editable={editable}
+                // content={editorContent}
+                handleClick={handleVariableClick}
+              />
               {/* <CodeEditor
                 editable={editable}
-                handleClick={handleClick}
+                handleClick={handleVariableClick}
                 content={editorContent}
               /> */}
             </CardContent>
           </Card>
 
-          {/* Docs Panel */}
-          {showDocsPanel && (
-            <>
-              <Card className="outline-neutral-400 relative outline outline-1">
-                <CardHeader className="flex py-4 flex-row justify-between">
-                  <div className="text-lg font-semibold">Documentation</div>
-                  <X
-                    strokeWidth={2}
-                    className="size-4 transition ease-in-out delay-150 duration-300 hover:scale-150"
-                    onClick={() => setShowDocsPanel(!showDocsPanel)}
-                  />
-                </CardHeader>
-                <CardContent className="flex pt-2">
-                  {/* This is for a This is for a This is for a This is for a This
-                  is for a This is for a This is for a This is for a This is for
-                  a This is for a This is for a This is for a This is for a This
-                  is for a This is for a This is for a This is for a This is for
-                  a This is for a This is for a This is for a This is for a This
-                  is for a This is for a This is for a This is for a This is for
-                  a This is for a This is for a This is for a This is for a This
-                  is for a This is for a This is for a This is for a This is for
-                  a This is for a This is for a This is for a This is for a This
-                  is for a This is for a This is for a This is for a This is for
-                  a This is for a This is for a This is for a This is for a This
-                  is for a This is for a This is for a This is for a This is for
-                  a This is for a This is for a This is for a This is for a This
-                  is for a This is for a This is for a This is for a This is for
-                  a This is for a This is for a This is for a This is for a This
-                  is for a This is for a This is for a This is for a This is for
-                  a */}
-                </CardContent>
-
-                {/* <CardFooter className="absolute bottom-2 w-full">
-                  <Input
-                    placeholder="Enter your question here."
-                    className="w-full"
-                  ></Input>
-                </CardFooter> */}
-              </Card>
-            </>
-          )}
+          {/* Docs popup */}
+          {/* TODO make this draggable */}
+          <ChatSupport alias={currentEnvironment} />
         </div>
-
-        <Card className="bottom-4 outline-1 outline-neutral-400 outline shadow-2xl w-full mt-4">
-          <Input
-            placeholder="Enter your question here."
-            className="w-full"
-          ></Input>
-        </Card>
       </div>
     </main>
   );
 }
 
-type CodeEditorHeaderProps = {
-  version: string;
-  visible: boolean;
-  editable: boolean;
-  editorContent: string;
-  setVisible: (state: boolean) => void;
-  setEditable: (state: boolean) => void;
-};
-
-const CodeEditorHeader = ({
-  version,
-  visible,
-  editable,
-  setVisible,
-  setEditable,
-  editorContent,
-}: CodeEditorHeaderProps) => {
-  const { copied, copyToClipboard } = useCopyToClipboard();
+const SelectEnvironment = ({ environments }: EnvironmentComponentProps) => {
+  const { alias, setAlias } = useCodeEditor();
 
   return (
-    <div className="flex items-center justify-between gap-4">
-      <span className="text-xl font-bold">.env</span>
-      <div className="flex items-center ">
-        <div className="text-sm flex items-center">
-          <GitBranch className="mr-1 w-4 h-4" strokeWidth={1.5} />
-          <Link
-            href={"#"}
-            className="text-blue-400 underline underline-offset-2"
-          >
-            {version}
-          </Link>
-        </div>
-        <div className="flex items-center gap-x-3 ml-4 text-sm">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger>
-                {editable ? (
-                  <ToggleRight
-                    strokeWidth={1.5}
-                    className="w-5 h-5"
-                    onClick={() => setEditable(!editable)}
-                  />
-                ) : (
-                  <ToggleLeft
-                    strokeWidth={1.5}
-                    className="w-5 h-5"
-                    onClick={() => setEditable(!editable)}
-                  />
-                )}
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Edit</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger>
-                {copied ? (
-                  <CheckCheck strokeWidth={1.5} className="w-4 h-4" />
-                ) : (
-                  <ClipboardList
-                    strokeWidth={1.5}
-                    className="w-4 h-4"
-                    onClick={() => copyToClipboard(editorContent)}
-                  />
-                )}
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Copy</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger>
-                <ListChecks strokeWidth={1.5} className="w-4 h-4" />
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Compare variables</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger>
-                {visible ? (
-                  <Eye
-                    strokeWidth={1.5}
-                    className="w-4 h-4"
-                    onClick={() => setVisible(!visible)}
-                  />
-                ) : (
-                  <EyeOff
-                    strokeWidth={1.5}
-                    className="w-4 h-4"
-                    onClick={() => setVisible(!visible)}
-                  />
-                )}
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Visibility</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const EnvironmentComponent = ({
-  environments,
-  currentEnvironment,
-  setCurrentEnvironment,
-}: EnvironmentComponentProps) => {
-  return (
-    <Select
-      value={currentEnvironment}
-      onValueChange={(value) => setCurrentEnvironment(value)}
-    >
+    <Select value={alias} onValueChange={(value) => setAlias(value)}>
       <SelectTrigger className="w-40">
         <SelectValue placeholder={"development"} />
       </SelectTrigger>
@@ -436,5 +286,103 @@ const EnvironmentComponent = ({
     </Select>
   );
 };
+
+function ChatSupport({ alias }: { alias: string }) {
+  const [document, setDocument] = useState("");
+
+  let queryDocs = useQuery(
+    api.docs.searchDocumentByFileName,
+    alias ? { fileName: defaultKeyMapping[alias] || "" } : "skip"
+  );
+
+  useEffect(() => {
+    console.log("queryDocs", queryDocs);
+
+    if (queryDocs) {
+      console.log("queryDocs", queryDocs);
+      setDocument(queryDocs.document);
+    } else {
+      setDocument(
+        "Dotenv documentation context could not be found. Please respond appropriately."
+      );
+    }
+  }, [queryDocs]);
+
+  const { messages, input, isLoading, handleInputChange, handleSubmit } =
+    useChat({
+      // this is important so useChat will not use "/console/api/chat"
+      api: "../api/chat",
+      onError: (e) => {
+        console.log(e);
+      },
+      body: { document },
+    });
+
+  return (
+    <ExpandableChat size="md" position="bottom-right">
+      <ExpandableChatHeader className="flex-col text-center justify-center">
+        <h1 className="text-xl font-semibold">Chat with our AI ✨</h1>
+        <p>Ask any question for our AI to answer</p>
+        <div className="flex gap-2 items-center pt-2">
+          {/* <Button variant="secondary">New Chat</Button> */}
+          {/* <Button variant="secondary">See FAQ</Button> */}
+        </div>
+      </ExpandableChatHeader>
+      <ExpandableChatBody>
+        <ChatMessageList>
+          {messages.map((item) => {
+            if (item.role === "user")
+              return (
+                <ChatBubble>
+                  <ChatBubbleAvatar fallback={<User />} />
+                  <ChatBubbleMessage>{item.content}</ChatBubbleMessage>
+                </ChatBubble>
+              );
+
+            if (item.role === "assistant")
+              return (
+                <ChatBubble className="ml-auto">
+                  <ChatBubbleAvatar src={robotImg(300)} />
+                  <ChatBubbleMessage>{item.content}</ChatBubbleMessage>
+                </ChatBubble>
+              );
+          })}
+        </ChatMessageList>
+      </ExpandableChatBody>
+      <ExpandableChatFooter className="flex items-center h-20 p-3">
+        <form
+          onSubmit={handleSubmit}
+          className="flex w-full gap-x-2 items-center"
+        >
+          <Input
+            value={input}
+            name="messages"
+            onChange={handleInputChange}
+            placeholder="Enter your questions."
+          />
+
+          {!isLoading && (
+            <Button type="submit" size="icon">
+              <Send className="size-4" />
+            </Button>
+          )}
+
+          {isLoading && (
+            <Button
+              disabled
+              size="icon"
+              className="flex items-center justify-center"
+            >
+              <Loader2 className="h-4 w-4 animate-spin" />
+            </Button>
+          )}
+        </form>
+      </ExpandableChatFooter>
+    </ExpandableChat>
+  );
+}
+
+const robotImg = (size: number) =>
+  `https://robohash.org/convex_hackathon/set_set1?size=${size}x${size}`;
 
 export default VariablePage;

@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { paginationOptsValidator } from "convex/server";
 
 export const getEnvByFileName = query({
   args: {
@@ -25,13 +26,13 @@ export const getEnvByFileName = query({
     }
 
     // Get the latest changes
-    let encryptedContent = await ctx.db
+    let variableContent = await ctx.db
       .query("audit_logs")
       .filter((q) => q.eq(q.field("variableId"), file._id))
       .order("desc")
       .first();
 
-    return { message: "Environemt was returned.", data: encryptedContent };
+    return { message: "Environemt was returned.", data: variableContent };
   },
 });
 
@@ -40,6 +41,7 @@ export const storeEnvFile = mutation({
     env: v.object({
       path: v.string(),
       version: v.string(),
+      message: v.string(),
       fileName: v.string(),
       projectId: v.string(),
       encryptedData: v.string(),
@@ -49,7 +51,7 @@ export const storeEnvFile = mutation({
     }),
   },
   handler: async (ctx, { env, user }) => {
-    const { fileName, encryptedData, path, projectId, version } = env;
+    const { fileName, encryptedData, path, projectId, version, message } = env;
     const { clerkUserId } = user;
 
     let variableRecord = await ctx.db
@@ -72,6 +74,7 @@ export const storeEnvFile = mutation({
 
       let new_record = await ctx.db.insert("audit_logs", {
         version,
+        message,
         variableId,
         encryptedData,
         type: "CREATED",
@@ -88,6 +91,7 @@ export const storeEnvFile = mutation({
     // Use uuid to make sure that the private keys are not overwritten
     await ctx.db.insert("audit_logs", {
       version,
+      message,
       encryptedData,
       type: "MODIFIED",
       uniqueProjectId: projectId,
@@ -99,5 +103,35 @@ export const storeEnvFile = mutation({
       message: "Environemt variable was modified.",
       data: { modified: true, acknowledged: true },
     };
+  },
+});
+
+export const listVariables = query({
+  args: {
+    uniqueProjectId: v.string(),
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, { uniqueProjectId, paginationOpts }) => {
+    let data = await ctx.db
+      .query("variables")
+      .filter((q) => q.eq(q.field("uniqueProjectId"), uniqueProjectId))
+      .paginate(paginationOpts);
+
+    return data;
+  },
+});
+
+export const listAuditLogs = query({
+  args: {
+    uniqueProjectId: v.string(),
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, { uniqueProjectId, paginationOpts }) => {
+    let data = await ctx.db
+      .query("audit_logs")
+      .filter((q) => q.eq(q.field("uniqueProjectId"), uniqueProjectId))
+      .paginate(paginationOpts);
+
+    return data;
   },
 });

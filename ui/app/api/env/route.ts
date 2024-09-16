@@ -9,6 +9,7 @@ import {
   allowedActions,
   extractIvAndKey,
   formatZodError,
+  generateEditVersion,
   validatePrivateKey,
 } from "@/lib/utils";
 import { z } from "zod";
@@ -19,18 +20,19 @@ type PushRequest = {
   content: string;
   fileName: string;
   projectId: string;
+  message?: string;
   clerkUserId: string;
 };
 
 type PullRequest = {
   fileName: string;
   projectId: string;
-  // userEmail: string;
   clerkUserId: string;
 };
 
 let pushSchema = z.object({
   content: z.string(),
+  message: z.string().nullable().nullish(),
   path: z.string().min(1),
   fileName: z.string().min(1),
   projectId: z.string().min(1),
@@ -55,6 +57,7 @@ export const GET = async (req: Request) => {
 export const POST = async (req: Request) => {
   try {
     let body = (await req.json()) as PushRequest;
+    let edit_version = await generateEditVersion(8);
 
     let validate = pushSchema.safeParse(body);
 
@@ -82,11 +85,11 @@ export const POST = async (req: Request) => {
     console.log("encryptedData", encryptedData);
 
     // TODO be sure to encrypt the private key before saving to upstash
-    // TODO Also add the edit version to the private key identifier
     let storePrivateKey = await storeEncryptedPrivateKey({
       fileName,
       projectId,
       privateKey,
+      edit_version,
     });
 
     if (storePrivateKey !== "OK") {
@@ -103,11 +106,11 @@ export const POST = async (req: Request) => {
 
     let record = await __pushChanges({
       path,
-      projectId,
       fileName,
-      // TODO generate a unique id for edit versioning
-      version: "",
+      projectId,
       encryptedData,
+      message: body?.message || "",
+      version: edit_version,
       clerkUserId: body.clerkUserId,
     });
 
@@ -174,6 +177,7 @@ export const PUT = async (req: Request) => {
     let cachedKey = await getEncryptedPrivateKey({
       fileName,
       projectId,
+      edit_version: variable.data.version,
     });
 
     if (!cachedKey) {

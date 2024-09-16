@@ -50,3 +50,6 @@ check.txt
 # turbo repo
 .turbo/**
 
+
+# Sentry Config File
+.env.sentry-build-plugin

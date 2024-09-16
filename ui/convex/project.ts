@@ -2,6 +2,8 @@ import { v, VId } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { filter } from "convex-helpers/server/filter";
 
+// TODO run an npm script to initialize roles in the database.
+
 /**
  * Creates a new project, designates user as `project maintainer` and assigns the role `admin_user` to the user.
  */
@@ -9,13 +11,13 @@ export const createProject = mutation({
   args: {
     label: v.string(),
     userId: v.string(),
-    roleId: v.string(),
+    // roleId: v.string(),
     uniqueProjectId: v.string(), // project_uuid
     website_url: v.optional(v.string()),
   },
   handler: async (
     ctx,
-    { label, userId, roleId, uniqueProjectId, website_url }
+    { label, userId, /* roleId, */ uniqueProjectId, website_url }
   ) => {
     let user = await ctx.db
       .query("users")
@@ -32,7 +34,8 @@ export const createProject = mutation({
     let role = await ctx.db
       .query("roles")
       .filter((q) =>
-        q.and(q.eq(q.field("_id"), roleId), q.eq(q.field("code"), "admin_user"))
+        // q.and(q.eq(q.field("_id"), roleId), q.eq(q.field("code"), "admin_user"))
+        q.eq(q.field("code"), "admin_user")
       )
       .unique();
 
@@ -148,7 +151,7 @@ export const getProjectIdWithClerkUserId = query({
   },
 });
 
-// List the projects where the user is associated with
+// List the projects where the user is involved.
 export const listProjects = query({
   args: {
     clerkUserId: v.string(),
@@ -166,7 +169,6 @@ export const listProjects = query({
       };
     }
 
-    // Find the
     let project = await filter(ctx.db.query("projects"), (project) => {
       let teamMember = project.team.find(
         (member) => member.clerkUserId === user.clerkUserId
@@ -190,5 +192,49 @@ export const listProjects = query({
       message: "User was found to be a team member.",
       data: project,
     };
+  },
+});
+
+export const listProjectTeam = query({
+  args: {
+    uniqueProjectId: v.string(),
+  },
+  handler: async (ctx, { uniqueProjectId }) => {
+    let data = await ctx.db
+      .query("projects")
+      .filter((q) => q.eq(q.field("uniqueProjectId"), uniqueProjectId))
+      .first();
+
+    if (!data) {
+      return [];
+    }
+
+    let team = await Promise.all(
+      data.team.map(async (item) => {
+        let user = await ctx.db
+          .query("users")
+          .withIndex("by_clerkUserId", (q) =>
+            q.eq("clerkUserId", item.clerkUserId)
+          )
+          .first();
+
+        if (!user) return null;
+
+        return {
+          userId: user._id,
+          email: user.email,
+          roleId: item.roleId,
+          lastName: user.lastName,
+          role: item.project_role,
+          firstName: user.firstName,
+          clerkUserId: user.clerkUserId,
+          isOwner: data.maintainedByClerkUserId === item.clerkUserId,
+        };
+      })
+    );
+
+    let filtered = team.filter(Boolean);
+
+    return filtered;
   },
 });

@@ -7,10 +7,11 @@ import path from "node:path";
 import { $ } from "zx";
 import { UserConfig, WriteGlobalType } from "../types";
 import { Server } from "node:http";
+import { Command } from "commander";
 
-export const FOLDER = ".ven";
-export const BINDING = "ven.d.ts";
-export const CONFIG_FILE = "ven.config.json";
+export const FOLDER = ".dxenv";
+export const BINDING = "dxenv.d.ts";
+export const CONFIG_FILE = "dxenv.config.json";
 
 export function isValidJson(file: string) {
   try {
@@ -140,3 +141,12 @@ export const listen = async (
   let { listen } = await import("async-listen");
   return listen(server, ...args);
 };
+
+export const defaultKeyMapping: Record<string, string> = {
+  ci: ".env.ci",
+  development: ".env",
+  local: ".env.local",
+  production: ".env.production",
+  staging: ".env.staging",
+  test: ".env.test",
+} as const;

@@ -3,8 +3,6 @@ import { Webhook } from "svix";
 import { headers } from "next/headers";
 import { WebhookEvent } from "@clerk/nextjs/server";
 import { __handleWebhookCreateUser } from "@/lib/action";
-// import { handleWebhookCreateUser } from "@/lib/action";
-
 class NoSvixNoHeadersError extends Error {
   public code;
   constructor(message: string, code: number) {
@@ -22,6 +20,8 @@ class SvixVerificationError extends Error {
     this.code = code;
   }
 }
+
+export const dynamic = "force-dynamic";
 
 export const POST = async (req: Request) => {
   try {

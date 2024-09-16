@@ -1,4 +1,5 @@
-import { DesktopSidebar, MobileSidebar } from "@/components/Sidebar";
+import { CodeEditorProvider } from "@/components/CodeEditor";
+import { DesktopSidebar, MobileSidebar } from "@/components/Sidebar/index";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -25,26 +26,6 @@ const sideBarLinks = [
     label: "Dashboard",
     component: <Home className="h-4 w-4" />,
     path: "/console",
-  },
-  {
-    label: "Variable",
-    component: <Library className="h-4 w-4" />,
-    path: "/console/variable",
-  },
-  {
-    label: "Audit logs",
-    component: <Logs className="h-4 w-4" />,
-    path: "/console/logs",
-  },
-  {
-    label: "Team",
-    component: <Users className="h-4 w-4" />,
-    path: "/console/team",
-  },
-  {
-    label: "Settings",
-    component: <Settings className="h-4 w-4" />,
-    path: "/console/settings",
   },
 ];
 
@@ -104,7 +85,7 @@ function DashboardLayout({
             </DropdownMenuContent>
           </DropdownMenu>
         </header>
-        {children}
+        <CodeEditorProvider>{children}</CodeEditorProvider>
       </div>
     </div>
   );
