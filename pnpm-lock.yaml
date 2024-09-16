@@ -247,6 +247,9 @@ importers:
         specifier: ^4.5.5
         version: 4.5.5(@types/react@18.3.5)(react@18.3.1)
     devDependencies:
+      '@edge-runtime/vm':
+        specifier: ^4.0.3
+        version: 4.0.3
       '@types/node':
         specifier: ^20.14.14
         version: 20.16.5
@@ -279,7 +282,7 @@ importers:
         version: 5.6.2
       vitest:
         specifier: ^2.0.5
-        version: 2.0.5(@types/node@20.16.5)(terser@5.32.0)
+        version: 2.0.5(@edge-runtime/vm@4.0.3)(@types/node@20.16.5)(terser@5.32.0)
 
 packages:
 
@@ -627,6 +630,14 @@ packages:
     peerDependencies:
       '@tanstack/react-query': ^5.0.0
       convex: ^1.13.0
+
+  '@edge-runtime/primitives@5.1.0':
+    resolution: {integrity: sha512-bs379S/qL7b9B1fXM3xYe+g2orW7Uy0m8oIudiXLcHQyZLsdd0Gfw9STngFDnaAfAcRN5g+/YEMPSsDqiPm0TQ==}
+    engines: {node: '>=16'}
+
+  '@edge-runtime/vm@4.0.3':
+    resolution: {integrity: sha512-2EKlqxSbZTV4D+XG8DTX+9P1SL+m48ahvNbDuxz+dZkmUZ+ju4hl/m28j7QMbC9kU5S+4HUJCYKCAfA+3gggLw==}
+    engines: {node: '>=16'}
 
   '@emnapi/core@0.45.0':
     resolution: {integrity: sha512-DPWjcUDQkCeEM4VnljEOEcXdAD7pp8zSZsgOujk/LGIwCXWbXJngin+MO4zbH429lzeC3WbYLGjE2MaUOwzpyw==}
@@ -6860,6 +6871,12 @@ snapshots:
       '@tanstack/react-query': 5.55.4(react@18.3.1)
       convex: 1.15.0(@clerk/clerk-react@5.8.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
 
+  '@edge-runtime/primitives@5.1.0': {}
+
+  '@edge-runtime/vm@4.0.3':
+    dependencies:
+      '@edge-runtime/primitives': 5.1.0
+
   '@emnapi/core@0.45.0':
     dependencies:
       tslib: 2.7.0
@@ -12479,7 +12496,7 @@ snapshots:
       fsevents: 2.3.3
       terser: 5.32.0
 
-  vitest@2.0.5(@types/node@20.16.5)(terser@5.32.0):
+  vitest@2.0.5(@edge-runtime/vm@4.0.3)(@types/node@20.16.5)(terser@5.32.0):
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@vitest/expect': 2.0.5
@@ -12501,6 +12518,7 @@ snapshots:
       vite-node: 2.0.5(@types/node@20.16.5)(terser@5.32.0)
       why-is-node-running: 2.3.0
     optionalDependencies:
+      '@edge-runtime/vm': 4.0.3
       '@types/node': 20.16.5
     transitivePeerDependencies:
       - less

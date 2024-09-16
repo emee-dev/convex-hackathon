@@ -1,14 +1,7 @@
-import { v } from "convex/values";
-import {
-  action,
-  internalAction,
-  internalMutation,
-  mutation,
-  query,
-} from ".././_generated/server";
-import { internal } from ".././_generated/api";
-import { Doc } from ".././_generated/dataModel";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { v } from "convex/values";
+import { internal } from ".././_generated/api";
+import { action, internalMutation } from ".././_generated/server";
 
 const GEMINI_MODEL_NAME = "text-embedding-004";
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY!);

@@ -33,12 +33,14 @@ pnpm install
 
 ## Environment variables in UI workspace
 
-Please copy the files in `.env.example` to `.env.local`. The following technologies were used in so please register and get the required keys.
+Please copy the files in `.env.example` to `.env.local`. The following technologies were used, in order to make this tool work, so register and get the required keys and credentials.
 
 - **Convex DB:** https://dashboard.convex.dev/
 - **Gemini LLM:** https://aistudio.google.com/app/apikey
 - **Clerk Auth:** https://dashboard.clerk.com/apps/
 - **Upstash Redis:** https://console.upstash.com/redis/
+- **Unkey:** https://unkey.com/
+- **Sentry:** https://sentry.io/
 
 ## CLI Setup and Usage
 
@@ -47,6 +49,8 @@ To be able to push and pull environment variables, it is important to do the fol
 ```bash
 # cd cli folder
 cd cli
+
+# rename .env.example to .env.local
 
 # build workspace
 pnpm build

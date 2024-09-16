@@ -18,6 +18,10 @@
 - [Error Handling](#error-handling)
 - [Additional Information](#additional-information)
 
+## Disclaimer
+
+**Note**: This cli has not been uploaded to npm yet. See the workspace readme for detailed build instructions. The details here includes some of the cli commands.
+
 ## Installation
 
 Install `@dxenv/cli` globally using npm, yarn or pnpm:
@@ -139,19 +143,22 @@ Pulls the environment file and injects it into the process for continuous integr
 #### Example
 
 ```bash
-dx ci local -k "api_key1399202" -s
+dx ci local -k "dxenv_key1399202" -s
 ```
 
 ## Configuration File
 
-Create a `ven.config.json` file in your project root to define your project and profile mappings:
+Create a `dxenv.config.json` file in your project root to define your project and profile mappings:
 
 ```json copy
 {
   "projectId": "<project id>",
   "profiles": {
     "development": ".env",
+    "local": ".env.local",
     "production": ".env.production",
+    "ci": ".env.ci",
+    "staging": ".env.staging",
     "test": ".env.test"
   }
 }
@@ -161,7 +168,7 @@ The configuration allows you to set your own aliases or skip it using the `-s` f
 
 ## Configuration
 
-The configuration file `ven.config.json` should be placed in your project's root directory. It contains information about project aliases and environment mappings.
+The configuration file `dxenv.config.json` should be placed in your project's root directory. It contains information about project aliases and environment mappings.
 
 ### Local Development
 
@@ -240,11 +247,11 @@ To configure `@dxenv/cli` for local development, follow these steps:
 
 ### CI Pipeline
 
-For CI environments, ensure you provide the `FRONTEND_URL` as an environment variable in your CI configuration:
+For building in CI environments, ensure you provide the `FRONTEND_URL` as an environment variable in your CI configuration:
 
 ```yaml
 env:
-  FRONTEND_URL: https://deployed_next_js_endpoint:3000
+  FRONTEND_URL: https://convex-hackathon-pi.vercel.app
 ```
 
 **Example GitHub Actions Configuration:**
@@ -257,8 +264,6 @@ on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      FRONTEND_URL: https://deployed_next_js_endpoint:3000
 
     steps:
       - uses: actions/checkout@v2
@@ -269,8 +274,10 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Push Environment Variables
-        run: ven push .env.production -s
+      - name: Inject Environment Variables and Start Next.js Application
+        run: |
+          dx ci production -k ${{ secrets.DXENV_INTEGRATION_KEY }}
+          next start
 ```
 
 ## Examples

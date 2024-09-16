@@ -1,4 +1,3 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { Doc } from "./_generated/dataModel";
@@ -13,7 +12,6 @@ export const searchEmbeddings = action({
   handler: async (ctx, { fileName, descriptionQuery }) => {
     const embedding = await embed(descriptionQuery);
 
-    // 2. Then search for similar foods!
     const results = await ctx.vectorSearch("docs", "by_embedding", {
       vector: embedding,
       limit: 16,
