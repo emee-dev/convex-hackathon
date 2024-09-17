@@ -1,9 +1,7 @@
 /* eslint-disable jsx-a11y/alt-text */
 /* eslint-disable @next/next/no-img-element */
 import "server-only";
-// import { ConvexHttpClient } from "convex/browser";
 import { api } from "@/convex/_generated/api";
-import { client } from "@/lib/utils";
 import { fetchQuery } from "convex/nextjs";
 
 export const getUserRoleAndPermissions = async ({

@@ -1,3 +1,4 @@
+import { api } from "@/convex/_generated/api";
 import { getEncryptedPrivateKey, storeEncryptedPrivateKey } from "@/lib/redis";
 import {
   allowedActions,
@@ -8,10 +9,9 @@ import {
   generateEditVersion,
   validatePrivateKey,
 } from "@/lib/utils";
+import { fetchMutation, fetchQuery } from "convex/nextjs";
 import { z } from "zod";
 import { getUserRoleAndPermissions } from "./handler";
-import { fetchMutation, fetchQuery } from "convex/nextjs";
-import { api } from "@/convex/_generated/api";
 
 type PushRequest = {
   path: string;

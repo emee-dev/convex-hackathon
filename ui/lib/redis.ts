@@ -1,11 +1,8 @@
 import { Redis } from "@upstash/redis";
-import { PrivateKey } from "./action";
-import { validatePrivateKey } from "./utils";
-import { defaultKeyMapping } from "@/types";
+import { PrivateKey } from "./utils";
 
 const redis = Redis.fromEnv();
 
-// TODO also attach the edit version
 /** `PrivateKeyIdentifier` -> `pkId_` + `file_name` + `project_id` + `edit_version` */
 export type PrivateKeyIdentifier = `pkId_${string}.${string}.${string}`;
 

@@ -1,9 +1,8 @@
 "use server";
 
-import { __getUserRoleAndPermissions } from "@/app/api/env/handler";
-import { decryptContent } from "@/lib/action";
+import { getUserRoleAndPermissions } from "@/app/api/env/handler";
 import { getEncryptedPrivateKey } from "@/lib/redis";
-import { allowedActions, extractIvAndKey } from "@/lib/utils";
+import { allowedActions, decryptContent, extractIvAndKey } from "@/lib/utils";
 
 export const decryptInDashboard = async ({
   fileName,
@@ -18,7 +17,7 @@ export const decryptInDashboard = async ({
   encryptedData: string;
   uniqueProjectId: string;
 }) => {
-  let user = await __getUserRoleAndPermissions({
+  let user = await getUserRoleAndPermissions({
     projectId: uniqueProjectId,
     clerkUserId,
   });
