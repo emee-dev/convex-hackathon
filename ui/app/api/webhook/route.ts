@@ -2,7 +2,9 @@ import { roles, WebhookUserCreatedPayload } from "@/types";
 import { Webhook } from "svix";
 import { headers } from "next/headers";
 import { WebhookEvent } from "@clerk/nextjs/server";
-import { __handleWebhookCreateUser } from "@/lib/action";
+import { fetchMutation } from "convex/nextjs";
+import { api } from "@/convex/_generated/api";
+
 class NoSvixNoHeadersError extends Error {
   public code;
   constructor(message: string, code: number) {
@@ -23,6 +25,32 @@ class SvixVerificationError extends Error {
 
 export const dynamic = "force-dynamic";
 
+type CreateUser = {
+  email: string;
+  clerkUserId: string;
+  firstName: string;
+  lastName: string;
+  system_role: "basic_user";
+};
+
+const handleWebhookCreateUser = async ({
+  email,
+  clerkUserId,
+  firstName,
+  lastName,
+  system_role,
+}: CreateUser) => {
+  let db = fetchMutation(api.user.createUser, {
+    email,
+    clerkUserId,
+    firstName,
+    lastName,
+    system_role,
+  });
+
+  return db;
+};
+
 export const POST = async (req: Request) => {
   try {
     let payload = await verifyWebhookEvent(req);
@@ -39,7 +67,7 @@ export const POST = async (req: Request) => {
     let { id, email_addresses, first_name, last_name } = payload.data;
 
     // sync db
-    let createUser = await __handleWebhookCreateUser({
+    let createUser = await handleWebhookCreateUser({
       clerkUserId: id,
       firstName: first_name,
       lastName: last_name,

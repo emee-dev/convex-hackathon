@@ -7,7 +7,7 @@ export const getEnvByFileName = query({
     fileName: v.string(),
     projectId: v.string(),
   },
-  handler: async (ctx, { fileName, projectId /* skip_flag */ }) => {
+  handler: async (ctx, { fileName, projectId }) => {
     let file = await ctx.db
       .query("variables")
       .filter((q) =>
@@ -31,6 +31,10 @@ export const getEnvByFileName = query({
       .filter((q) => q.eq(q.field("variableId"), file._id))
       .order("desc")
       .first();
+
+    console.log(
+      `Returning file: ${variableContent?._id} and v${variableContent?.version}`
+    );
 
     return { message: "Environment was returned.", data: variableContent };
   },

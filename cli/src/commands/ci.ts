@@ -11,8 +11,8 @@ import {
   loadJSON,
 } from "../utils";
 
-import { FRONTEND_URL } from "..";
 import axiosRetry from "axios-retry";
+import { FRONTEND_URL } from "..";
 
 export default function ciCommand() {
   const program = new Command("ci");
@@ -24,6 +24,7 @@ export default function ciCommand() {
     .description(
       "Useful for CICD environments, where user interaction is limited."
     )
+    .allowUnknownOption(true)
     .action(
       async (environment: string, options: { key: string; skip?: boolean }) => {
         try {
@@ -76,9 +77,8 @@ export default function ciCommand() {
             process.exit(1);
           }
 
+          // TODO faulty function will work it in the future.
           await injectEnvironmentVariables(response.data.decryptedText);
-          console.log("Successfully fetched the latest changes.");
-          process.exit(0);
         } catch (error: any) {
           if (axios.isAxiosError(error)) {
             console.log(error.cause);

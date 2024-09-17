@@ -2,10 +2,16 @@ import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import ms from "ms";
 import { SafeParseError, z } from "zod";
-import { PrivateKey } from "./action";
 import { ConvexHttpClient } from "convex/browser";
 import { defaultKeyMapping, Permissions } from "@/types";
 import { customAlphabet } from "nanoid";
+import {
+  decrypt,
+  deriveCryptoKeyfromEncryptionKey,
+  deriveEncryptionKeyFromCryptoKey,
+  encrypt,
+  Format,
+} from "./helper/aes-gcm";
 
 export const client = new ConvexHttpClient(
   process.env["NEXT_PUBLIC_CONVEX_URL"]!
@@ -74,4 +80,69 @@ export const generateConfig = (projectId: string) => {
   };
 
   return JSON.stringify(config, null, 3);
+};
+
+type EnvParams = {
+  file_name: string;
+  content: string;
+  path: string;
+  environment: string;
+};
+
+/** `PrivateKey` -> `pkey_` + `iv` + `encryptionKey` */
+export type PrivateKey = `pkey_${string}.${string}`;
+
+export const encryptContent = async ({
+  content,
+}: Pick<EnvParams, "content">) => {
+  let formatter = new Format();
+
+  let encryptedText = await encrypt({ text: content });
+
+  let encryptedData = formatter.encryptedBufferToBase64(
+    encryptedText.encryptedBuffer
+  );
+
+  // Important
+  const iv = formatter.ivToBase64(encryptedText.iv);
+
+  // Important
+  let encryptionKey = (await deriveEncryptionKeyFromCryptoKey(
+    encryptedText.cryptoKey
+  )) as string;
+
+  return {
+    privateKey: `pkey_${iv}.${encryptionKey}`,
+    encryptedData,
+  } satisfies { privateKey: PrivateKey; encryptedData: string };
+};
+
+export const decryptContent = async ({
+  iv,
+  encryptedData,
+  encryptionKey,
+}: {
+  iv: string;
+  encryptionKey: string;
+  encryptedData: string;
+}) => {
+  let formatter = new Format();
+
+  const convertIv = formatter.base64IvToUint8Array(iv);
+  const convertEncryptedData =
+    formatter.encryptedBufferToUint8Array(encryptedData);
+  // formatter.encryptedBufferToUint8Array(record.data.encryptedData);
+
+  const derivedCryptoKey = await deriveCryptoKeyfromEncryptionKey(
+    encryptionKey,
+    "AES-GCM"
+  );
+
+  let decryptedText = await decrypt({
+    encryptedData: new Uint8Array(convertEncryptedData),
+    cryptoKey: derivedCryptoKey,
+    iv: convertIv,
+  });
+
+  return decryptedText;
 };

@@ -1,5 +1,6 @@
-import crypto from "node:crypto";
-const cryptoSubtle = crypto.webcrypto.subtle;
+import crypto from "crypto";
+
+const cryptoSubtle = crypto.subtle;
 
 const AES_MODES = {
   GCM: "AES-GCM",

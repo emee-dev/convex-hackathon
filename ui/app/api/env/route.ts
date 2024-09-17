@@ -1,19 +1,17 @@
-import {
-  __pullLatestChanges,
-  __pushChanges,
-  decryptContent,
-  encryptContent,
-} from "@/lib/action";
 import { getEncryptedPrivateKey, storeEncryptedPrivateKey } from "@/lib/redis";
 import {
   allowedActions,
+  decryptContent,
+  encryptContent,
   extractIvAndKey,
   formatZodError,
   generateEditVersion,
   validatePrivateKey,
 } from "@/lib/utils";
 import { z } from "zod";
-import { __getUserRoleAndPermissions } from "./handler";
+import { getUserRoleAndPermissions } from "./handler";
+import { fetchMutation, fetchQuery } from "convex/nextjs";
+import { api } from "@/convex/_generated/api";
 
 type PushRequest = {
   path: string;
@@ -51,6 +49,46 @@ export const dynamic = "force-dynamic";
 // cli user Authentication
 export const GET = async (req: Request) => {
   return Response.json({ message: "Server action called." });
+};
+
+const pushChanges = async ({
+  path,
+  version,
+  message,
+  fileName,
+  projectId,
+  clerkUserId,
+  encryptedData,
+}: {
+  path: string;
+  version: string;
+  message: string;
+  fileName: string;
+  projectId: string;
+  clerkUserId: string;
+  encryptedData: string;
+}) => {
+  const data = await fetchMutation(api.env.storeEnvFile, {
+    env: { version, path, fileName, encryptedData, projectId, message },
+    user: { clerkUserId },
+  });
+
+  return data;
+};
+
+const pullLatestChanges = async ({
+  fileName,
+  projectId,
+}: {
+  fileName: string;
+  projectId: string;
+}) => {
+  const file = fetchQuery(api.env.getEnvByFileName, {
+    fileName,
+    projectId,
+  });
+
+  return file;
 };
 
 // cli push command
@@ -104,7 +142,7 @@ export const POST = async (req: Request) => {
       );
     }
 
-    let record = await __pushChanges({
+    let record = await pushChanges({
       path,
       fileName,
       projectId,
@@ -145,7 +183,7 @@ export const PUT = async (req: Request) => {
 
     let { projectId, fileName, clerkUserId } = body;
 
-    let user = await __getUserRoleAndPermissions({ projectId, clerkUserId });
+    let user = await getUserRoleAndPermissions({ projectId, clerkUserId });
 
     if (!user || !user.data) {
       throw new Error("Error evaluating user role and permissions.");
@@ -159,7 +197,7 @@ export const PUT = async (req: Request) => {
       );
     }
 
-    let variable = await __pullLatestChanges({
+    let variable = await pullLatestChanges({
       fileName,
       projectId,
     });

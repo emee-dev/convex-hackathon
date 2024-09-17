@@ -1,14 +1,16 @@
-import { __pullLatestChanges, decryptContent } from "@/lib/action";
 import { getEncryptedPrivateKey } from "@/lib/redis";
 import {
   allowedActions,
+  decryptContent,
   extractIvAndKey,
   formatZodError,
   validatePrivateKey,
 } from "@/lib/utils";
 import { verifyKey } from "@unkey/api";
 import { z } from "zod";
-import { __getAPIKeyRoleAndPermissions } from "../handler";
+import { api } from "@/convex/_generated/api";
+
+import { fetchQuery } from "convex/nextjs";
 
 type CIPullRequest = {
   fileName: string;
@@ -23,6 +25,36 @@ let ciPullSchema = z.object({
 });
 
 export const dynamic = "force-dynamic";
+
+const pullLatestChanges = async ({
+  fileName,
+  projectId,
+}: {
+  fileName: string;
+  projectId: string;
+}) => {
+  const file = fetchQuery(api.env.getEnvByFileName, {
+    fileName,
+    projectId,
+  });
+
+  return file;
+};
+
+const getAPIKeyRoleAndPermissions = async ({
+  unkeyKeyId,
+  uniqueProjectId,
+}: {
+  uniqueProjectId: string;
+  unkeyKeyId: string;
+}) => {
+  let data = await fetchQuery(api.integrations.apiKeyRoleAndPermissions, {
+    unkeyKeyId,
+    uniqueProjectId,
+  });
+
+  return data;
+};
 
 // For pulling variables in CICD environments
 export const PUT = async (req: Request) => {
@@ -45,8 +77,6 @@ export const PUT = async (req: Request) => {
       apiId,
       key: apiKey,
     });
-
-    console.log("error", error?.message);
 
     if (error) {
       throw error;
@@ -72,7 +102,7 @@ export const PUT = async (req: Request) => {
       return Response.json({ message: "Invalid key id." }, { status: 500 });
     }
 
-    let user = await __getAPIKeyRoleAndPermissions({
+    let user = await getAPIKeyRoleAndPermissions({
       uniqueProjectId: body.projectId,
       unkeyKeyId: result.keyId!,
     });
@@ -89,7 +119,7 @@ export const PUT = async (req: Request) => {
       );
     }
 
-    let variable = await __pullLatestChanges({
+    let variable = await pullLatestChanges({
       fileName,
       projectId,
     });
@@ -103,6 +133,12 @@ export const PUT = async (req: Request) => {
         { status: 500 }
       );
     }
+
+    console.log({
+      fileName,
+      projectId,
+      version: variable.data,
+    });
 
     let cachedKey = await getEncryptedPrivateKey({
       fileName,

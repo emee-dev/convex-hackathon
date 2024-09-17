@@ -4,15 +4,16 @@ import "server-only";
 // import { ConvexHttpClient } from "convex/browser";
 import { api } from "@/convex/_generated/api";
 import { client } from "@/lib/utils";
+import { fetchQuery } from "convex/nextjs";
 
-export const __getUserRoleAndPermissions = async ({
+export const getUserRoleAndPermissions = async ({
   projectId,
   clerkUserId,
 }: {
   projectId: string;
   clerkUserId: string;
 }) => {
-  let data = await client.query(api.user.userRoleAndPermissions, {
+  let data = await fetchQuery(api.user.userRoleAndPermissions, {
     clerkUserId,
     projectId,
   });
@@ -20,14 +21,14 @@ export const __getUserRoleAndPermissions = async ({
   return data;
 };
 
-export const __getAPIKeyRoleAndPermissions = async ({
+export const getAPIKeyRoleAndPermissions = async ({
   unkeyKeyId,
   uniqueProjectId,
 }: {
   uniqueProjectId: string;
   unkeyKeyId: string;
 }) => {
-  let data = await client.query(api.integrations.apiKeyRoleAndPermissions, {
+  let data = await fetchQuery(api.integrations.apiKeyRoleAndPermissions, {
     unkeyKeyId,
     uniqueProjectId,
   });

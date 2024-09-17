@@ -3,22 +3,6 @@
 import { CodeEditorHeader, useCodeEditor } from "@/components/CodeEditor";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { useUser } from "@clerk/nextjs";
-import "@uiw/react-textarea-code-editor/dist.css";
-import axios from "axios";
-import { ListChecks, Loader2, User } from "lucide-react";
-import dynamic from "next/dynamic";
-import { notFound, useRouter } from "next/navigation";
-import Loader from "./loading";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
 import {
   Dialog,
   DialogContent,
@@ -27,13 +11,28 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { useForm } from "react-hook-form";
+import { useUser } from "@clerk/nextjs";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { useMutation } from "@tanstack/react-query";
+import "@uiw/react-textarea-code-editor/dist.css";
+import axios from "axios";
+import { ListChecks, Loader2 } from "lucide-react";
+import dynamic from "next/dynamic";
+import { notFound, useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import Loader from "./loading";
 const CodeEditor = dynamic(() => import("@/components/CodeEditor/editor"), {
   ssr: false,
   loading: () => <Loader />,
@@ -106,6 +105,7 @@ function VariablePage({ searchParams }: DashboardProps) {
             />
           </div>
         </div>
+
         <Separator orientation="vertical" />
 
         <div className="grid grid-cols-1 gap-y-2 mt-5">

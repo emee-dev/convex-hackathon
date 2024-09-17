@@ -2,16 +2,11 @@
   "name": "ui",
   "version": "0.0.1",
   "private": true,
-  "vault": {
-    "env-files": [
-      ".env",
-      ".env.local"
-    ]
-  },
+  "dxenv": {},
   "scripts": {
-    "dev": "next dev",
+    "dev": "node injest.js && next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "node injest.js && next start",
     "lint": "next lint",
     "ts:lint": "tsc --noEmit",
     "convex:dev": "convex dev",
@@ -65,6 +60,7 @@
     "convex": "^1.14.0",
     "convex-ents": "^0.11.0",
     "convex-helpers": "^0.1.52",
+    "crypto-browserify": "^3.12.0",
     "events": "^3.3.0",
     "framer-motion": "^11.5.4",
     "langchain": "^0.2.18",
@@ -76,6 +72,7 @@
     "react-dom": "^18",
     "react-hook-form": "^7.53.0",
     "react-resizable-panels": "^2.1.2",
+    "stream-browserify": "^3.0.0",
     "svix": "^1.30.0",
     "tailwind-merge": "^2.4.0",
     "tailwindcss-animate": "^1.0.7",

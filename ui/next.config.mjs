@@ -11,19 +11,25 @@ const nextConfig = {
       },
     ],
   },
-  experimental: {
-    serverComponentsExternalPackages: ["sharp", "onnxruntime-node"],
-  },
-  webpack: (config) => {
-    // Ignore node-specific modules when bundling for the browser
-    // https://webpack.js.org/configuration/resolve/#resolvealias
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      sharp$: false,
-      "onnxruntime-node$": false,
-    };
-    return config;
-  },
+  // webpack: async (config, { isServer, buildId, dev, webpack }) => {
+  //   if (!isServer) {
+  //     config.resolve.fallback = {
+  //       ...config.resolve.fallback,
+  //       stream: await import("stream-browserify"),
+  //       crypto: await import("crypto-browserify"),
+  //     };
+
+  //     config.plugins.push(
+  //       new webpack.ProvidePlugin({
+  //         process: "process/browser",
+  //       }),
+  //       new webpack.NormalModuleReplacementPlugin(/node:crypto/, (resource) => {
+  //         resource.request = resource.request.replace(/^node:/, "");
+  //       })
+  //     );
+  //   }
+  //   return config;
+  // },
 };
 
 export default withSentryConfig(nextConfig, {

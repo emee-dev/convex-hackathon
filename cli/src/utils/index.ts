@@ -2,12 +2,11 @@ import { OverloadedParameters } from "async-listen/dist/overloaded-parameters";
 import dotenv from "dotenv";
 import fs from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { Server } from "node:http";
 import os from "node:os";
 import path from "node:path";
 import { $ } from "zx";
 import { UserConfig, WriteGlobalType } from "../types";
-import { Server } from "node:http";
-import { Command } from "commander";
 
 export const FOLDER = ".dxenv";
 export const BINDING = "dxenv.d.ts";
@@ -93,12 +92,19 @@ export const generateId = async () => {
 export const injectEnvironmentVariables = async (data: string | Buffer) => {
   try {
     let parsed = dotenv.parse<Record<string, string>>(data);
+    const processEnv = parsed;
+
+    dotenv.config({
+      processEnv,
+    });
 
     // Inject the response data into the shell environment
-    for (const [key, value] of Object.entries(parsed)) {
-      process.env[key] = value;
-      await $`export ${key}=${value}`;
-    }
+    // for (const [key, value] of Object.entries(parsed)) {
+    //   process.env[key] = value;
+    //   // await $`export ${key}=${value}`;
+    // }
+
+    return processEnv;
   } catch (error: any) {
     console.warn("Error injecting environment variables.");
   }
