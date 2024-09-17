@@ -70,6 +70,7 @@ import {
   useMutation as tuseMutation,
 } from "@tanstack/react-query";
 import { convexQuery, useConvexMutation } from "@convex-dev/react-query";
+import { Organization } from "@clerk/backend";
 
 type DashboardProps = {
   params: {};
@@ -541,6 +542,39 @@ const CreateInvitation = () => {
   const { toast } = useToast();
   let listRoles = useQuery(api.roles.listRoles);
 
+  const { data, mutateAsync, isPending } = tuseMutation<
+    unknown,
+    Error,
+    { email: string; role_code: "basic_user" | "admin_user" }
+  >({
+    mutationFn: async ({ email, role_code }) => {
+      try {
+        let req = await axios.post("/api", { email, role_code });
+
+        if (!req.data) {
+          toast({
+            variant: "destructive",
+            description: "There was an error processing this request.",
+          });
+          return;
+        }
+
+        let isPending = await req.data.pending;
+
+        if (isPending) {
+          toast({
+            description: "Your invite has been sent.",
+          });
+          return;
+        }
+
+        return Promise.resolve(isPending);
+      } catch (error) {
+        console.log(error);
+      }
+    },
+  });
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -550,28 +584,7 @@ const CreateInvitation = () => {
   });
 
   const onSubmit = async ({ email, role_code }: z.infer<typeof formSchema>) => {
-    try {
-      let req = await axios.post("/api", { email, role_code });
-
-      if (!req.data) {
-        toast({
-          variant: "destructive",
-          description: "There was an error processing this request.",
-        });
-        return;
-      }
-
-      let isPending = await req.data.pending;
-
-      if (isPending) {
-        toast({
-          description: "Your invite has been sent.",
-        });
-        return;
-      }
-    } catch (error) {
-      console.log(error);
-    }
+    await mutateAsync({ email, role_code });
   };
 
   return (
@@ -588,6 +601,7 @@ const CreateInvitation = () => {
               team member.
             </DialogDescription>
           </DialogHeader>
+
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <div className="grid gap-4 py-4">
               <FormField
@@ -648,9 +662,17 @@ const CreateInvitation = () => {
                 )}
               />
 
-              <Button className="w-full" type="submit">
-                Send Invitation
-              </Button>
+              {!isPending && (
+                <Button className={`w-full`} type="submit">
+                  Send Invitation
+                </Button>
+              )}
+
+              {isPending && (
+                <Button className={`w-full`} type="submit" disabled={isPending}>
+                  Working.. <Loader2 className="h-4 w-4 animate-spin" />
+                </Button>
+              )}
             </div>
           </form>
         </DialogContent>

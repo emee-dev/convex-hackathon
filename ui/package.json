@@ -18,6 +18,7 @@
   "dependencies": {
     "@auth/core": "^0.34.2",
     "@clerk/backend": "^1.8.0",
+    "@clerk/clerk-sdk-node": "^5.0.41",
     "@clerk/nextjs": "^5.2.14",
     "@codemirror/highlight": "^0.19.8",
     "@codemirror/language": "^6.10.2",

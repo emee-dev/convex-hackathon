@@ -1,8 +1,8 @@
 import { FRONTEND_URL } from "@/const";
 import { formatZodError } from "@/lib/utils";
 import { createClerkClient } from "@clerk/backend";
-import { z } from "zod";
 import { Unkey } from "@unkey/api";
+import { z } from "zod";
 
 type InvitationParams = { email: string; role_code: string };
 type IntegrationParams = {
@@ -45,32 +45,23 @@ export const POST = async (req: Request) => {
     const response = await clerkClient.invitations.createInvitation({
       emailAddress: body.email,
       redirectUrl: `${FRONTEND_URL}/sign-up`,
+      ignoreExisting: true,
       publicMetadata: {
         role: body.role_code,
       },
     });
 
-    if (response.status !== "pending" || "accepted") {
-      return Response.json(
-        {
-          message: "Invitation could not be sent.",
-          data: null,
-        },
-        {
-          status: 500,
-        }
-      );
-    }
+    console.log("response", response);
 
     // return Response.json({ data: user.emailAddresses[0].emailAddress });
     return Response.json({
       message: "An invitation was sent.",
       data: {
-        pending: true,
+        pending: response.status,
       },
     });
   } catch (error: any) {
-    console.log("Error: ", error.message);
+    console.log("Error: ", error);
     return Response.json(
       { message: "Internal server error, please try again.", data: [] },
       {
