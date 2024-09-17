@@ -246,7 +246,14 @@ const Dashboard = ({ searchParams }: DashboardProps) => {
                     )}
                   </TableBody>
                 </Table>
-                <Pagination className="mt-4" />
+                <Button
+                  className="w-full mt-5"
+                  variant={"outline"}
+                  disabled={logStatus !== "Exhausted"}
+                  onClick={() => loadMoreVariables(2)}
+                >
+                  Load more
+                </Button>
               </CardContent>
             </Card>
           </TabsContent>
@@ -308,9 +315,15 @@ const Dashboard = ({ searchParams }: DashboardProps) => {
                       <TableNoData />
                     )}
                   </TableBody>
-
-                  <Button className="w-full">Load more</Button>
                 </Table>
+                <Button
+                  className="w-full mt-5"
+                  variant={"outline"}
+                  disabled={logStatus !== "Exhausted"}
+                  onClick={() => LoadMoreLogs(2)}
+                >
+                  Load more
+                </Button>
               </CardContent>
             </Card>
           </TabsContent>
@@ -443,7 +456,14 @@ const Dashboard = ({ searchParams }: DashboardProps) => {
                     )}
                   </TableBody>
                 </Table>
-                <Pagination className="mt-4" />
+                <Button
+                  className="w-full mt-5"
+                  variant={"outline"}
+                  disabled={integrationsStatus !== "Exhausted"}
+                  onClick={() => LoadMoreIntegrations(2)}
+                >
+                  Load more
+                </Button>
               </CardContent>
             </Card>
           </TabsContent>
