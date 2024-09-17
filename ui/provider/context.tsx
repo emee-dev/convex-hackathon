@@ -3,14 +3,14 @@
 import { create } from "zustand";
 
 type AppContext = {
-  app: { projectId: string } | null;
+  app: { projectId: string | null };
 };
 
 const useApp = create<AppContext>(() => ({
-  app: null,
+  app: { projectId: null },
 }));
 
-const useAppContext = create<AppContext /* AuthContext */>((set) => ({
+const useAppContext = create<AppContext>((set) => ({
   ...useApp(),
 }));
 

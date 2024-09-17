@@ -12,6 +12,7 @@ import {
 } from "../utils";
 
 import { FRONTEND_URL } from "..";
+import axiosRetry from "axios-retry";
 
 export default function ciCommand() {
   const program = new Command("ci");
@@ -61,10 +62,13 @@ export default function ciCommand() {
             apiKey: API_KEY,
           } as CIPullRequest;
 
+          axiosRetry(axios, { retries: 3 });
+
           let getDataRequest = await axios.put(
             `${FRONTEND_URL}/api/env/ci`,
             payload
           );
+
           let response = (await getDataRequest.data) as PullResponse;
 
           if (!response.data) {

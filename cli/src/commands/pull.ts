@@ -31,6 +31,7 @@ import {
   writeGlobalTypes,
 } from "../utils";
 import { FRONTEND_URL } from "..";
+import axiosRetry from "axios-retry";
 
 export default function pullCommand() {
   const program = new Command("pull");
@@ -88,6 +89,8 @@ export default function pullCommand() {
             projectId: vaultConfig.projectId,
             clerkUserId: userConfig.clerkUserId,
           } as PullRequest;
+
+          axiosRetry(axios, { retries: 3 });
 
           let getDataRequest = await axios.put(
             `${FRONTEND_URL}/api/env`,

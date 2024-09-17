@@ -26,6 +26,9 @@ importers:
       axios:
         specifier: ^1.7.4
         version: 1.7.7
+      axios-retry:
+        specifier: ^4.5.0
+        version: 4.5.0(axios@1.7.7)
       chokidar:
         specifier: ^3.6.0
         version: 3.6.0
@@ -64,6 +67,22 @@ importers:
         specifier: ^4.16.5
         version: 4.19.0
 
+  sample:
+    dependencies:
+      '@hono/node-server':
+        specifier: ^1.13.0
+        version: 1.13.0(hono@4.6.2)
+      hono:
+        specifier: ^4.6.2
+        version: 4.6.2
+    devDependencies:
+      '@types/node':
+        specifier: ^20.11.17
+        version: 20.16.5
+      tsx:
+        specifier: ^4.7.1
+        version: 4.19.0
+
   ui:
     dependencies:
       '@auth/core':
@@ -86,7 +105,7 @@ importers:
         version: 0.0.48(convex@1.15.0(@clerk/clerk-react@5.8.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(next@14.2.5(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
       '@convex-dev/react-query':
         specifier: 0.0.0-alpha.5
-        version: 0.0.0-alpha.5(@tanstack/react-query@5.55.4(react@18.3.1))(convex@1.15.0(@clerk/clerk-react@5.8.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        version: 0.0.0-alpha.5(@tanstack/react-query@5.56.2(react@18.3.1))(convex@1.15.0(@clerk/clerk-react@5.8.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@emoji-mart/data':
         specifier: ^1.2.1
         version: 1.2.1
@@ -153,6 +172,9 @@ importers:
       '@sentry/nextjs':
         specifier: '8'
         version: 8.30.0(@opentelemetry/api@1.9.0)(@opentelemetry/core@1.26.0(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.53.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.26.0(@opentelemetry/api@1.9.0))(next@14.2.5(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(webpack@5.94.0)
+      '@tanstack/react-query':
+        specifier: ^5.56.2
+        version: 5.56.2(react@18.3.1)
       '@tanstack/react-table':
         specifier: ^8.20.1
         version: 8.20.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -194,7 +216,7 @@ importers:
         version: 0.11.0(convex@1.15.0(@clerk/clerk-react@5.8.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       convex-helpers:
         specifier: ^0.1.52
-        version: 0.1.57(convex@1.15.0(@clerk/clerk-react@5.8.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(zod@3.23.8)
+        version: 0.1.57(convex@1.15.0(@clerk/clerk-react@5.8.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(hono@4.6.2)(react@18.3.1)(zod@3.23.8)
       events:
         specifier: ^3.3.0
         version: 3.3.0
@@ -1111,6 +1133,12 @@ packages:
   '@google/generative-ai@0.7.1':
     resolution: {integrity: sha512-WTjMLLYL/xfA5BW6xAycRPiAX7FNHKAxrid/ayqC1QMam0KAK0NbMeS9Lubw80gVg5xFMLE+H7pw4wdNzTOlxw==}
     engines: {node: '>=18.0.0'}
+
+  '@hono/node-server@1.13.0':
+    resolution: {integrity: sha512-kz323qIQkNQElEGroo/E9MKPDuIR5pkuk/XEWd50K+cSEKdmdiYx0PKWUdaNY2ecJYngtF+njDMsMKplL6zfEg==}
+    engines: {node: '>=18.14.1'}
+    peerDependencies:
+      hono: ^4
 
   '@hookform/resolvers@3.9.0':
     resolution: {integrity: sha512-bU0Gr4EepJ/EQsH/IwEzYLsT/PEj5C0ynLQ4m+GSHS+xKH4TfSelhluTgOaoc4kA5s7eCsQbM4wvZLzELmWzUg==}
@@ -2744,11 +2772,11 @@ packages:
   '@swc/helpers@0.5.5':
     resolution: {integrity: sha512-KGYxvIOXcceOAbEk4bi/dVLEK9z8sZ0uBB3Il5b1rhfClSpcX0yfRO0KmTkqR2cnQDymwLB+25ZyMzICg/cm/A==}
 
-  '@tanstack/query-core@5.55.4':
-    resolution: {integrity: sha512-uoRqNnRfzOH4OMIoxj8E2+Us89UIGXfau981qYJWsNMkFS1GXR4UIyzUTVGq4N7SDLHgFPpo6IOazqUV5gkMZA==}
+  '@tanstack/query-core@5.56.2':
+    resolution: {integrity: sha512-gor0RI3/R5rVV3gXfddh1MM+hgl0Z4G7tj6Xxpq6p2I03NGPaJ8dITY9Gz05zYYb/EJq9vPas/T4wn9EaDPd4Q==}
 
-  '@tanstack/react-query@5.55.4':
-    resolution: {integrity: sha512-e3uX5XkLD9oTV66/VsVpkYz3Ds/ps/Yk+V5d89xthAbtNIKKBEm4FdNb9yISFzGEGezUzVO68qmfmiSrtScvsg==}
+  '@tanstack/react-query@5.56.2':
+    resolution: {integrity: sha512-SR0GzHVo6yzhN72pnRhkEFRAHMsUo5ZPzAxfTMvUxFIDVS6W9LYUp6nXW3fcHVdg0ZJl8opSH85jqahvm6DSVg==}
     peerDependencies:
       react: ^18 || ^19
 
@@ -3208,6 +3236,11 @@ packages:
   axe-core@4.10.0:
     resolution: {integrity: sha512-Mr2ZakwQ7XUAjp7pAwQWRhhK8mQQ6JAaNWSjmjxil0R8BPioMtQsTLOolGYkji1rcL++3dCqZA3zWqpT+9Ew6g==}
     engines: {node: '>=4'}
+
+  axios-retry@4.5.0:
+    resolution: {integrity: sha512-aR99oXhpEDGo0UuAlYcn2iGRds30k366Zfa05XWScR9QaQD4JYiP3/1Qt1u7YlefUOK+cn0CcwoL1oefavQUlQ==}
+    peerDependencies:
+      axios: 0.x || 1.x
 
   axios@1.7.7:
     resolution: {integrity: sha512-S4kL7XrjgBmvdGut0sN3yJxqYzrDOnivkBiN0OFs6hLiUam3UPvswUo0kqGyhqUZGEOytHyumEdXsAkgCOUf3Q==}
@@ -4137,6 +4170,10 @@ packages:
   hoist-non-react-statics@3.3.2:
     resolution: {integrity: sha512-/gGivxi8JPKWNm/W0jSmzcMPpfpPLc3dY/6GxhX2hQ9iGj3aDfklV4ET7NjKpSinLpJ5vafa9iiGIEZg10SfBw==}
 
+  hono@4.6.2:
+    resolution: {integrity: sha512-v+39817TgAhetmHUEli8O0uHDmxp2Up3DnhS4oUZXOl5IQ9np9tYtldd42e5zgdLVS0wsOoXQNZ6mx+BGmEvCA==}
+    engines: {node: '>=16.9.0'}
+
   html-void-elements@3.0.0:
     resolution: {integrity: sha512-bEqo66MRXsUGxWHV5IP0PUiAWwoEjba4VCzg0LjFJBpchPaTfyfCKTG6bc5F8ucKec3q5y6qOdGyYTSBEvhCrg==}
 
@@ -4314,6 +4351,10 @@ packages:
   is-regex@1.1.4:
     resolution: {integrity: sha512-kvRdxDsxZjhzUX07ZnLydzS1TU/TJlTUHHY4YLL87e37oUA49DfkLqgy+VjFocowy29cKvcSiu+kIv728jTTVg==}
     engines: {node: '>= 0.4'}
+
+  is-retry-allowed@2.2.0:
+    resolution: {integrity: sha512-XVm7LOeLpTW4jV19QSH38vkswxoLud8sQ57YwJVTPWdiaI9I8keEhGFpBlslyVsgdQy4Opg8QOLb8YRgsyZiQg==}
+    engines: {node: '>=10'}
 
   is-set@2.0.3:
     resolution: {integrity: sha512-iPAjerrse27/ygGLxw+EBR9agv9Y6uLeYVJMu+QNCoouJ1/1ri0mGrcWpfCqFZuzzx3WjtwxG098X+n4OuRkPg==}
@@ -6869,9 +6910,9 @@ snapshots:
       - '@simplewebauthn/server'
       - nodemailer
 
-  '@convex-dev/react-query@0.0.0-alpha.5(@tanstack/react-query@5.55.4(react@18.3.1))(convex@1.15.0(@clerk/clerk-react@5.8.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))':
+  '@convex-dev/react-query@0.0.0-alpha.5(@tanstack/react-query@5.56.2(react@18.3.1))(convex@1.15.0(@clerk/clerk-react@5.8.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))':
     dependencies:
-      '@tanstack/react-query': 5.55.4(react@18.3.1)
+      '@tanstack/react-query': 5.56.2(react@18.3.1)
       convex: 1.15.0(@clerk/clerk-react@5.8.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
 
   '@edge-runtime/primitives@5.1.0': {}
@@ -7147,6 +7188,10 @@ snapshots:
   '@google/generative-ai@0.17.2': {}
 
   '@google/generative-ai@0.7.1': {}
+
+  '@hono/node-server@1.13.0(hono@4.6.2)':
+    dependencies:
+      hono: 4.6.2
 
   '@hookform/resolvers@3.9.0(react-hook-form@7.53.0(react@18.3.1))':
     dependencies:
@@ -8593,11 +8638,11 @@ snapshots:
       '@swc/counter': 0.1.3
       tslib: 2.7.0
 
-  '@tanstack/query-core@5.55.4': {}
+  '@tanstack/query-core@5.56.2': {}
 
-  '@tanstack/react-query@5.55.4(react@18.3.1)':
+  '@tanstack/react-query@5.56.2(react@18.3.1)':
     dependencies:
-      '@tanstack/query-core': 5.55.4
+      '@tanstack/query-core': 5.56.2
       react: 18.3.1
 
   '@tanstack/react-table@8.20.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
@@ -9205,6 +9250,11 @@ snapshots:
 
   axe-core@4.10.0: {}
 
+  axios-retry@4.5.0(axios@1.7.7):
+    dependencies:
+      axios: 1.7.7
+      is-retry-allowed: 2.2.0
+
   axios@1.7.7:
     dependencies:
       follow-redirects: 1.15.9
@@ -9412,10 +9462,11 @@ snapshots:
     dependencies:
       convex: 1.15.0(@clerk/clerk-react@5.8.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
 
-  convex-helpers@0.1.57(convex@1.15.0(@clerk/clerk-react@5.8.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(zod@3.23.8):
+  convex-helpers@0.1.57(convex@1.15.0(@clerk/clerk-react@5.8.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(hono@4.6.2)(react@18.3.1)(zod@3.23.8):
     dependencies:
       convex: 1.15.0(@clerk/clerk-react@5.8.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     optionalDependencies:
+      hono: 4.6.2
       react: 18.3.1
       zod: 3.23.8
 
@@ -10411,6 +10462,8 @@ snapshots:
     dependencies:
       react-is: 16.13.1
 
+  hono@4.6.2: {}
+
   html-void-elements@3.0.0: {}
 
   https-proxy-agent@5.0.1:
@@ -10573,6 +10626,8 @@ snapshots:
     dependencies:
       call-bind: 1.0.7
       has-tostringtag: 1.0.2
+
+  is-retry-allowed@2.2.0: {}
 
   is-set@2.0.3: {}
 

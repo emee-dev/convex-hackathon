@@ -50,6 +50,7 @@
     "@radix-ui/react-toast": "^1.2.1",
     "@radix-ui/react-tooltip": "^1.1.2",
     "@sentry/nextjs": "8",
+    "@tanstack/react-query": "^5.56.2",
     "@tanstack/react-table": "^8.20.1",
     "@types/ms": "^0.7.34",
     "@uiw/codemirror-extensions-langs": "^4.23.0",

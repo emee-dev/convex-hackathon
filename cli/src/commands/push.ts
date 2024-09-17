@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { cwd } from "node:process";
 import pc from "picocolors";
 import { FRONTEND_URL } from "..";
+import axiosRetry from "axios-retry";
 import { Config, PushRequest, PushResponse } from "../types";
 import {
   CONFIG_FILE,
@@ -65,6 +66,8 @@ export default function pushCommand() {
           projectId: vaultConfig.projectId,
           clerkUserId: userConfig.clerkUserId,
         } as PushRequest;
+
+        axiosRetry(axios, { retries: 3 });
 
         let sendDataRequest = await axios.post(
           `${FRONTEND_URL}/api/env`,

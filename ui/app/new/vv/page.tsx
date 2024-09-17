@@ -16,6 +16,22 @@ import {
   ExpandableChatFooter,
   ExpandableChatHeader,
 } from "@/components/ui/chat/expandable-chat";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -27,14 +43,19 @@ import {
 import { api } from "@/convex/_generated/api";
 import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@clerk/nextjs";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
 import "@uiw/react-textarea-code-editor/dist.css";
 import { useChat } from "ai/react";
+import axios from "axios";
 import { useQuery } from "convex/react";
 import { ListChecks, Loader2, Send, User } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import Loader from "./loading";
 const CodeEditor = dynamic(() => import("@/components/CodeEditor/editor"), {
   ssr: false,
@@ -110,7 +131,6 @@ function VariablePage({ searchParams }: DashboardProps) {
 
   const [showDocsPanel, setShowDocsPanel] = useState<boolean>(true);
 
-  // encrypted content
   let envFileContent = useQuery(
     api.env.getEnvByFileName,
     uniqueProjectId && fileName
@@ -197,22 +217,11 @@ function VariablePage({ searchParams }: DashboardProps) {
           </div>
 
           <div className="flex items-center gap-x-2">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger>
-                  <Button variant={"outline"} asChild>
-                    <Link href={"#"} /* href={"/console/variable/configure"} */>
-                      <ListChecks strokeWidth={2} className="mr-2 h-4 w-4" />
-                      <div>Configure</div>
-                    </Link>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Configure environments</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            {/* <SelectEnvironment environments={environments} /> */}
+            <ModifyVariable
+              fileName={fileName}
+              clerkUserId={user?.id!}
+              uniqueProjectId={uniqueProjectId}
+            />
           </div>
         </div>
         <Separator orientation="vertical" />
@@ -242,6 +251,233 @@ function VariablePage({ searchParams }: DashboardProps) {
     </main>
   );
 }
+
+type PushChanges = {
+  path?: string;
+  content: string;
+  message?: string;
+  fileName: string;
+  projectId: string;
+  clerkUserId: string;
+};
+
+const modifyVariableSchema = z.object({
+  fileName: z.string().min(1),
+  projectId: z.string().min(1),
+  path: z.string().optional().or(z.literal("./")),
+  message: z.string().optional().or(z.literal("")),
+});
+
+const ModifyVariable = ({
+  clerkUserId,
+  uniqueProjectId,
+  fileName,
+}: {
+  clerkUserId: string;
+  fileName: string;
+  uniqueProjectId: string;
+}) => {
+  const { toast } = useToast();
+  const location = useRouter();
+  const { editorContent } = useCodeEditor();
+
+  const { mutateAsync, isPending } = useMutation<
+    unknown,
+    Error,
+    Pick<PushChanges, "path" | "message" | "fileName" | "projectId">
+  >({
+    mutationFn: async ({ path, fileName, projectId, message }) => {
+      try {
+        let req = await axios.post("/api/env", {
+          path,
+          message,
+          fileName,
+          projectId,
+          clerkUserId,
+          content: editorContent || "",
+        } as PushChanges);
+
+        if (!req.data) {
+          toast({
+            variant: "destructive",
+            title: "Uh oh! Something went wrong.",
+            description: "There was a problem with your request.",
+          });
+          return Promise.reject("There was a problem with your request.");
+        }
+
+        let res = (await req.data) as {
+          message: string;
+          data: {
+            modified: boolean;
+            acknowledged: boolean;
+          };
+        };
+
+        if (!res) {
+          toast({
+            variant: "destructive",
+            description: "Failed to create environment variable.",
+          });
+          return Promise.reject("Failed to create environment variable.");
+        }
+
+        toast({
+          description: `Environment variable: ${fileName} was created.`,
+        });
+
+        // location.push(
+        //   `/new/vv?label=${projectLabel}&pid=${projectId}&var=${fileName}`
+        // );
+
+        return Promise.resolve(res);
+      } catch (error) {
+        console.error(error);
+        toast({
+          variant: "destructive",
+          title: "Uh oh! Something went wrong.",
+          description: "There was a problem with your request. Try again",
+        });
+      }
+    },
+  });
+
+  const form = useForm<z.infer<typeof modifyVariableSchema>>({
+    resolver: zodResolver(modifyVariableSchema),
+    defaultValues: {
+      path: "./",
+      fileName,
+      message: "",
+      projectId: uniqueProjectId,
+    },
+  });
+
+  const onSubmit = async ({
+    path,
+    message,
+    fileName,
+    projectId,
+  }: z.infer<typeof modifyVariableSchema>) => {
+    await mutateAsync({
+      path,
+      message,
+      fileName,
+      projectId,
+    });
+  };
+
+  return (
+    <Form {...form}>
+      <Dialog>
+        <DialogTrigger asChild>
+          <Button type="button" variant="outline">
+            <ListChecks strokeWidth={2} className="mr-2 h-4 w-4" />
+            Save file
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Create Variable</DialogTitle>
+            <DialogDescription>
+              Configure a new environment variable.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
+            <div className="grid gap-4 pt-4">
+              <FormField
+                control={form.control}
+                name="fileName"
+                render={({ field }) => (
+                  <FormItem className="space-y-2">
+                    <FormLabel htmlFor="file_name">File Name</FormLabel>
+                    <FormControl>
+                      <Input
+                        id="file_name"
+                        autoComplete="off"
+                        placeholder=".env"
+                        {...field}
+                      />
+                    </FormControl>
+
+                    {form.formState.errors.fileName && (
+                      <FormMessage>
+                        {form.formState.errors.fileName.message}
+                      </FormMessage>
+                    )}
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="path"
+                render={({ field }) => (
+                  <FormItem className="space-y-2">
+                    <FormLabel htmlFor="path">File Path</FormLabel>
+                    <FormControl>
+                      <Input
+                        id="path"
+                        autoComplete="off"
+                        placeholder="./"
+                        {...field}
+                      />
+                    </FormControl>
+
+                    {form.formState.errors.path && (
+                      <FormMessage>
+                        {form.formState.errors.path.message}
+                      </FormMessage>
+                    )}
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="message"
+                render={({ field }) => (
+                  <FormItem className="space-y-2">
+                    <FormLabel htmlFor="message">Message</FormLabel>
+                    <FormControl>
+                      <Input
+                        id="message"
+                        autoComplete="off"
+                        placeholder="Why did you make these changes?"
+                        {...field}
+                      />
+                    </FormControl>
+
+                    {form.formState.errors.message && (
+                      <FormMessage>
+                        {form.formState.errors.message.message}
+                      </FormMessage>
+                    )}
+                  </FormItem>
+                )}
+              />
+
+              {!isPending && (
+                <Button className={"w-full mt-3"} type="submit">
+                  Save Integration
+                </Button>
+              )}
+
+              {isPending && (
+                <Button
+                  className={"w-full mt-3"}
+                  type="button"
+                  disabled={isPending}
+                >
+                  Working.. <Loader2 className="h-4 w-4 animate-spin" />
+                </Button>
+              )}
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </Form>
+  );
+};
 
 function ChatSupport({ alias }: { alias: string }) {
   const [document, setDocument] = useState("");

@@ -109,7 +109,10 @@ export const PUT = async (req: Request) => {
       prefix: "dxenv",
     });
 
-    return Response.json({ key: key.result });
+    return Response.json({
+      key: key.result,
+      message: "Integration was created.",
+    });
   } catch (error: any) {
     console.log("Error: ", error.message);
     return Response.json(

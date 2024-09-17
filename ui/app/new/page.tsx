@@ -55,16 +55,21 @@ import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/convex/_generated/api";
 import { useToast } from "@/hooks/use-toast";
 import useCopyToClipboard from "@/hooks/useCopyToClipboard";
-import { generateConfig } from "@/lib/utils";
+import { generateConfig, getRelative } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
-import { usePaginatedQuery, useQuery } from "convex/react";
-import { CopyCheck, CopyIcon, EllipsisVertical } from "lucide-react";
+import { useMutation, usePaginatedQuery, useQuery } from "convex/react";
+import { CopyCheck, CopyIcon, EllipsisVertical, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import {
+  useQuery as tuseQuery,
+  useMutation as tuseMutation,
+} from "@tanstack/react-query";
+import { convexQuery, useConvexMutation } from "@convex-dev/react-query";
 
 type DashboardProps = {
   params: {};
@@ -211,7 +216,9 @@ const Dashboard = ({ searchParams }: DashboardProps) => {
                           <TableCell className="font-medium">
                             {item.fileName}
                           </TableCell>
-                          <TableCell>2023-04-15 10:30 AM</TableCell>
+                          <TableCell>
+                            {getRelative(item._creationTime)} ago
+                          </TableCell>
                           <TableCell>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
@@ -225,12 +232,11 @@ const Dashboard = ({ searchParams }: DashboardProps) => {
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <DropdownMenuItem>Edit</DropdownMenuItem>
                                 <DropdownMenuItem>
                                   <Link
                                     href={`/new/vv?pid=${uniqueProjectId}&label=${projectLabel}&var=${item.fileName}`}
                                   >
-                                    View
+                                    Edit
                                   </Link>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem>Delete</DropdownMenuItem>
@@ -274,7 +280,9 @@ const Dashboard = ({ searchParams }: DashboardProps) => {
                     ) : logs.length > 0 ? (
                       logs.map((item) => (
                         <TableRow key={item._id}>
-                          <TableCell>{item._creationTime}</TableCell>
+                          <TableCell>
+                            {getRelative(item._creationTime)} ago
+                          </TableCell>
                           <TableCell>
                             <Badge variant="secondary">{item.type}</Badge>
                           </TableCell>
@@ -397,6 +405,7 @@ const Dashboard = ({ searchParams }: DashboardProps) => {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Label</TableHead>
+                      <TableHead>Created At</TableHead>
                       <TableHead>
                         <span>Actions</span>
                       </TableHead>
@@ -409,6 +418,9 @@ const Dashboard = ({ searchParams }: DashboardProps) => {
                       integrations.map((item) => (
                         <TableRow key={item._id}>
                           <TableCell>{item.label}</TableCell>
+                          <TableCell>
+                            {getRelative(item._creationTime)} ago
+                          </TableCell>
                           <TableCell>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
@@ -655,6 +667,11 @@ const CreateIntegration = ({
   const { copied, copyToClipboard } = useCopyToClipboard();
   const [key, setKey] = useState("");
   const [maskedKey, setMaskedKey] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const { data, isPending, error, mutateAsync } = tuseMutation({
+    mutationFn: useConvexMutation(api.integrations.storeIntegration),
+  });
 
   const form = useForm<z.infer<typeof integrationSchema>>({
     resolver: zodResolver(integrationSchema),
@@ -676,6 +693,7 @@ const CreateIntegration = ({
     uniqueProjectId,
   }: z.infer<typeof integrationSchema>) => {
     try {
+      setLoading(true);
       let req = await axios.put("/api", {
         label,
         uniqueProjectId,
@@ -691,12 +709,15 @@ const CreateIntegration = ({
         return;
       }
 
-      let res = (await req.data.key) as { keyId: string; key: string };
+      let integration = (await req.data.key) as
+        | { keyId: string; key: string }
+        | undefined;
 
-      if (!res) {
+      if (!integration) {
         toast({
           variant: "destructive",
-          description: "Failed to create integration.",
+          title: "Failed to create integration.",
+          description: req.data.message,
         });
         return;
       }
@@ -705,11 +726,22 @@ const CreateIntegration = ({
         description: `An integration for: '${label}' was created.`,
       });
 
+      // store integration
+      await mutateAsync({
+        label,
+        project_role,
+        uniqueProjectId,
+        unkeyKeyId: integration.keyId,
+      });
+
+      setLoading(false);
+
       // Set both the real key and the masked key
-      setKey(res.key);
-      setMaskedKey(maskKey(res.key));
+      setKey(integration.key);
+      setMaskedKey(maskKey(integration.key));
     } catch (error) {
       console.log(error);
+      setLoading(false);
     }
   };
 
@@ -774,12 +806,24 @@ const CreateIntegration = ({
                 </div>
               </div>
 
-              <Button
-                className={`w-full ${key ? "mt-0" : "mt-4"}`}
-                type="submit"
-              >
-                Save Integration
-              </Button>
+              {!isPending && !loading ? (
+                <Button
+                  className={`w-full ${key ? "mt-0" : "mt-4"}`}
+                  type="submit"
+                >
+                  Save Integration
+                </Button>
+              ) : null}
+
+              {loading || isPending ? (
+                <Button
+                  className={`w-full ${key ? "mt-0" : "mt-4"}`}
+                  type="submit"
+                  disabled={isPending && loading ? true : false}
+                >
+                  Working.. <Loader2 className="h-4 w-4 animate-spin" />
+                </Button>
+              ) : null}
             </div>
           </form>
         </DialogContent>

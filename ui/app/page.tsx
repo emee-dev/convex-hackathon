@@ -13,7 +13,7 @@ function Component() {
           prefetch={false}
         >
           <LockIcon className="h-6 w-6" />
-          <span className="sr-only">Secure Env</span>
+          <span className="sr-only">Dxenv</span>
         </Link>
         <nav className="ml-auto flex gap-4 sm:gap-6">
           <Link
@@ -170,7 +170,7 @@ function Component() {
                 Sign Up
               </Link>
               <Link
-                href="#"
+                href="/sign-up"
                 className="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-8 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
                 prefetch={false}
               >
@@ -198,7 +198,7 @@ function Component() {
                   placeholder="Enter your email"
                   className="max-w-lg flex-1"
                 />
-                <Button type="submit">Sign Up</Button>
+                <Button type="button">Sign Up</Button>
               </form>
             </div>
           </div>

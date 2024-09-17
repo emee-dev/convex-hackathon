@@ -7,9 +7,9 @@ import { Separator } from "@/components/ui/separator";
 import { useUser } from "@clerk/nextjs";
 import "@uiw/react-textarea-code-editor/dist.css";
 import axios from "axios";
-import { ListChecks, User } from "lucide-react";
+import { ListChecks, Loader2, User } from "lucide-react";
 import dynamic from "next/dynamic";
-import { notFound } from "next/navigation";
+import { notFound, useRouter } from "next/navigation";
 import Loader from "./loading";
 import {
   Form,
@@ -33,29 +33,11 @@ import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useMutation } from "@tanstack/react-query";
 const CodeEditor = dynamic(() => import("@/components/CodeEditor/editor"), {
   ssr: false,
   loading: () => <Loader />,
 });
-
-const environments = [
-  {
-    label: "development",
-    component: <User strokeWidth={2} className="mr-2 h-4 w-4" />,
-  },
-  {
-    label: "ci",
-    component: <User strokeWidth={2} className="mr-2 h-4 w-4" />,
-  },
-  {
-    label: "staging",
-    component: <User strokeWidth={2} className="mr-2 h-4 w-4" />,
-  },
-  {
-    label: "production",
-    component: <User strokeWidth={2} className="mr-2 h-4 w-4" />,
-  },
-];
 
 let env = `# dxenv CLI Usage
 
@@ -85,7 +67,7 @@ type DashboardProps = {
 };
 
 type PushChanges = {
-  path: string;
+  path?: string;
   content: string;
   message?: string;
   fileName: string;
@@ -118,8 +100,9 @@ function VariablePage({ searchParams }: DashboardProps) {
 
           <div className="flex items-center gap-x-2">
             <CreateVariable
-              uniqueProjectId={uniqueProjectId}
               clerkUserId={user?.id!}
+              uniqueProjectId={uniqueProjectId}
+              searchParams={searchParams}
             />
           </div>
         </div>
@@ -145,22 +128,87 @@ function VariablePage({ searchParams }: DashboardProps) {
 }
 
 const createVariableSchema = z.object({
-  path: z.string().optional(),
   fileName: z.string().min(1),
   projectId: z.string().min(1),
-  clerkUserId: z.string().min(1),
-  message: z.string().optional(),
+  path: z.string().optional().or(z.literal("./")),
+  message: z.string().optional().or(z.literal("")),
 });
 
 const CreateVariable = ({
   clerkUserId,
   uniqueProjectId,
+  searchParams,
 }: {
   clerkUserId: string;
   uniqueProjectId: string;
+  searchParams: DashboardProps["searchParams"];
 }) => {
   const { toast } = useToast();
+  const location = useRouter();
   const { editorContent } = useCodeEditor();
+
+  const { mutateAsync, isPending } = useMutation<
+    unknown,
+    Error,
+    Pick<PushChanges, "path" | "message" | "fileName" | "projectId">
+  >({
+    mutationFn: async ({ path, fileName, projectId, message }) => {
+      try {
+        let req = await axios.post("/api/env", {
+          path,
+          message,
+          fileName,
+          projectId,
+          clerkUserId,
+          content: editorContent || "",
+        } as PushChanges);
+
+        if (!req.data) {
+          toast({
+            variant: "destructive",
+            title: "Uh oh! Something went wrong.",
+            description: "There was a problem with your request.",
+          });
+          return Promise.reject("There was a problem with your request.");
+        }
+
+        let res = (await req.data) as {
+          message: string;
+          data: {
+            modified: boolean;
+            acknowledged: boolean;
+          };
+        };
+
+        if (!res) {
+          toast({
+            variant: "destructive",
+            description: "Failed to create environment variable.",
+          });
+          return Promise.reject("Failed to create environment variable.");
+        }
+
+        toast({
+          description: `Environment variable: ${fileName} was created.`,
+        });
+
+        let projectLabel = searchParams.label;
+
+        location.push(
+          `/new/vv?label=${projectLabel}&pid=${projectId}&var=${fileName}`
+        );
+
+        return Promise.resolve(res);
+      } catch (error) {
+        console.error(error);
+        toast({
+          variant: "destructive",
+          title: "Uh oh! Something went wrong.",
+          description: "There was a problem with your request. Try again",
+        });
+      }
+    },
+  });
 
   const form = useForm<z.infer<typeof createVariableSchema>>({
     resolver: zodResolver(createVariableSchema),
@@ -169,7 +217,6 @@ const CreateVariable = ({
       fileName: "",
       message: "",
       projectId: uniqueProjectId,
-      clerkUserId: clerkUserId,
     },
   });
 
@@ -178,49 +225,13 @@ const CreateVariable = ({
     message,
     fileName,
     projectId,
-    clerkUserId,
   }: z.infer<typeof createVariableSchema>) => {
-    try {
-      let req = await axios.post("/api/env", {
-        path,
-        fileName,
-        projectId,
-        message,
-        clerkUserId,
-        content: editorContent || "",
-      } as PushChanges);
-
-      if (!req.data) {
-        toast({
-          variant: "destructive",
-          title: "Uh oh! Something went wrong.",
-          description: "There was a problem with your request.",
-        });
-        return;
-      }
-
-      let res = (await req.data) as {
-        message: string;
-        data: {
-          modified: boolean;
-          acknowledged: boolean;
-        };
-      };
-
-      if (!res) {
-        toast({
-          variant: "destructive",
-          description: "Failed to create environment variable.",
-        });
-        return;
-      }
-
-      toast({
-        description: `Environment variable was created.`,
-      });
-    } catch (error) {
-      console.log(error);
-    }
+    await mutateAsync({
+      path,
+      message,
+      fileName,
+      projectId,
+    });
   };
 
   return (
@@ -313,9 +324,21 @@ const CreateVariable = ({
                 )}
               />
 
-              <Button className={"w-full mt-3"} type="submit">
-                Save Integration
-              </Button>
+              {!isPending && (
+                <Button className={"w-full mt-3"} type="submit">
+                  Save Integration
+                </Button>
+              )}
+
+              {isPending && (
+                <Button
+                  className={"w-full mt-3"}
+                  type="button"
+                  disabled={isPending}
+                >
+                  Working.. <Loader2 className="h-4 w-4 animate-spin" />
+                </Button>
+              )}
             </div>
           </form>
         </DialogContent>

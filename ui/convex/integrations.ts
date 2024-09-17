@@ -57,3 +57,39 @@ export const apiKeyRoleAndPermissions = query({
 //   args: {},
 //   handler: async (ctx, args) => {},
 // });
+
+export const storeIntegration = mutation({
+  args: {
+    label: v.string(),
+    project_role: v.literal("basic_user"),
+    uniqueProjectId: v.string(),
+    unkeyKeyId: v.string(),
+  },
+  handler: async (
+    ctx,
+    { label, project_role, uniqueProjectId, unkeyKeyId }
+  ) => {
+    let doesIntegrationExist = await ctx.db
+      .query("integrations")
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("uniqueProjectId"), uniqueProjectId),
+          q.eq(q.field("unkeyKeyId"), unkeyKeyId)
+        )
+      )
+      .first();
+
+    if (doesIntegrationExist) {
+      return { message: "Integration already exists", data: null };
+    }
+
+    await ctx.db.insert("integrations", {
+      label,
+      project_role,
+      uniqueProjectId,
+      unkeyKeyId,
+    });
+
+    return { message: "Integration was stored.", data: null };
+  },
+});
