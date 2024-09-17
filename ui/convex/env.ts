@@ -32,7 +32,7 @@ export const getEnvByFileName = query({
       .order("desc")
       .first();
 
-    return { message: "Environemt was returned.", data: variableContent };
+    return { message: "Environment was returned.", data: variableContent };
   },
 });
 
@@ -83,7 +83,7 @@ export const storeEnvFile = mutation({
       });
 
       return {
-        message: "Environemt variable was stored.",
+        message: "Environment variable was stored.",
         data: { modified: false, acknowledged: true },
       };
     }
@@ -100,7 +100,7 @@ export const storeEnvFile = mutation({
     });
 
     return {
-      message: "Environemt variable was modified.",
+      message: "Environment variable was modified.",
       data: { modified: true, acknowledged: true },
     };
   },
