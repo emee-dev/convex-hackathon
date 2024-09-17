@@ -1,7 +1,9 @@
 import { FRONTEND_URL } from "@/const";
+import { api } from "@/convex/_generated/api";
 import { formatZodError } from "@/lib/utils";
 import { createClerkClient } from "@clerk/backend";
 import { Unkey } from "@unkey/api";
+import { fetchMutation } from "convex/nextjs";
 import { z } from "zod";
 
 type InvitationParams = { email: string; role_code: string };
@@ -27,6 +29,10 @@ const integrationSchema = z.object({
   uniqueProjectId: z.string().min(1, "Please provide a valid project id."),
   project_role: z.literal("basic_user"),
 });
+
+export const GET = async () => {
+  await fetchMutation(api.run_once.build.injectRoleAndPermissions);
+};
 
 // Handle creating invitations
 export const POST = async (req: Request) => {

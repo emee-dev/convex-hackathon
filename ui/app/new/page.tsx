@@ -56,21 +56,17 @@ import { api } from "@/convex/_generated/api";
 import { useToast } from "@/hooks/use-toast";
 import useCopyToClipboard from "@/hooks/useCopyToClipboard";
 import { generateConfig, getRelative } from "@/lib/utils";
+import { useConvexMutation } from "@convex-dev/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation as tuseMutation } from "@tanstack/react-query";
 import axios from "axios";
-import { useMutation, usePaginatedQuery, useQuery } from "convex/react";
+import { usePaginatedQuery, useQuery } from "convex/react";
 import { CopyCheck, CopyIcon, EllipsisVertical, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import {
-  useQuery as tuseQuery,
-  useMutation as tuseMutation,
-} from "@tanstack/react-query";
-import { convexQuery, useConvexMutation } from "@convex-dev/react-query";
-import { Organization } from "@clerk/backend";
 
 type DashboardProps = {
   params: {};
@@ -240,7 +236,6 @@ const Dashboard = ({ searchParams }: DashboardProps) => {
                                     Edit
                                   </Link>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem>Delete</DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </TableCell>
@@ -313,8 +308,9 @@ const Dashboard = ({ searchParams }: DashboardProps) => {
                       <TableNoData />
                     )}
                   </TableBody>
+
+                  <Button className="w-full">Load more</Button>
                 </Table>
-                <Pagination className="mt-4" />
               </CardContent>
             </Card>
           </TabsContent>

@@ -84,12 +84,15 @@ export const injectRoleAndPermissions = mutation({
       });
 
       console.log("Added the required roles and permissions tables.");
+      return "found";
     }
 
     await ctx.db.insert("system", {
       addedPermissions: false,
       addedRoles: false,
     });
+
     console.log("Roles and permissions has already been injected.");
+    return "first";
   },
 });
