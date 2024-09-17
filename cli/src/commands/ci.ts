@@ -29,7 +29,7 @@ export default function ciCommand() {
         try {
           const currentDir = cwd();
           const skip_flag = options.skip;
-          const API_KEY = options.key;
+          const API_KEY = removeQuotes(options.key);
 
           let vaultConfig = await loadJSON<Config>(
             join(currentDir, CONFIG_FILE)
@@ -80,6 +80,12 @@ export default function ciCommand() {
           console.log("Successfully fetched the latest changes.");
           process.exit(0);
         } catch (error: any) {
+          if (axios.isAxiosError(error)) {
+            console.log(error.cause);
+            console.log("Response: ", error.response?.data.message);
+            process.exit(1);
+          }
+
           console.error(error.message);
           process.exit(1);
         }
@@ -87,4 +93,8 @@ export default function ciCommand() {
     );
 
   return program;
+}
+
+function removeQuotes(input: string): string {
+  return input.replace(/['"]/g, "");
 }

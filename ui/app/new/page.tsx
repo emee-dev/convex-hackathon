@@ -412,7 +412,8 @@ const Dashboard = ({ searchParams }: DashboardProps) => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {integrations && integrationsStatus !== "Exhausted" ? (
+                    {isLoadingIntegrations &&
+                    integrationsStatus !== "Exhausted" ? (
                       <TableLoading />
                     ) : integrations.length > 0 ? (
                       integrations.map((item) => (

@@ -46,20 +46,35 @@ export const PUT = async (req: Request) => {
       key: apiKey,
     });
 
+    console.log("error", error?.message);
+
     if (error) {
       throw error;
     }
 
-    if (!result.valid || !result.keyId) {
+    if (!result) {
+      return Response.json(
+        { message: "Third party error, try again." },
+        { status: 500 }
+      );
+    }
+
+    if (!result.valid) {
+      console.log("Invalid key access denied");
       return Response.json(
         { message: "Invalid key access denied" },
         { status: 401 }
       );
     }
 
+    if (!result.keyId) {
+      console.log("No keyid");
+      return Response.json({ message: "Invalid key id." }, { status: 500 });
+    }
+
     let user = await __getAPIKeyRoleAndPermissions({
       uniqueProjectId: body.projectId,
-      unkeyKeyId: result.keyId,
+      unkeyKeyId: result.keyId!,
     });
 
     if (!user || !user.data) {

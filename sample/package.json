@@ -1,7 +1,7 @@
 {
   "name": "sample",
   "scripts": {
-    "dev": "dx ci development -k 'dxenv_3ZWbtvyidsXgXMKrKUHbbsSA' tsx watch src/index.ts"
+    "dev": "dx ci development -s -k 'dxenv_3ZFnMPkEo3tqq84zbL6wgkRW' && tsx watch src/index.ts"
   },
   "dependencies": {
     "@hono/node-server": "^1.13.0",
