@@ -66,3 +66,6 @@ export const searchDocumentByFileName = query({
     return { id: doc._id, document: doc.body, createdAt: doc._creationTime };
   },
 });
+
+
+

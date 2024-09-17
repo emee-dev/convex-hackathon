@@ -19,6 +19,7 @@ import type * as inngest_load from "../inngest/load.js";
 import type * as integrations from "../integrations.js";
 import type * as project from "../project.js";
 import type * as roles from "../roles.js";
+import type * as run_once_build from "../run_once/build.js";
 import type * as user from "../user.js";
 
 /**
@@ -36,6 +37,7 @@ declare const fullApi: ApiFromModules<{
   integrations: typeof integrations;
   project: typeof project;
   roles: typeof roles;
+  "run_once/build": typeof run_once_build;
   user: typeof user;
 }>;
 export declare const api: FilterApi<

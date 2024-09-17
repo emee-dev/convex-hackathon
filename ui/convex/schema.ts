@@ -86,4 +86,10 @@ export default defineSchema({
     uniqueProjectId: v.string(),
     project_role: v.literal("basic_user"),
   }).index("by_unkeyKeyId", ["unkeyKeyId"]),
+
+  // System build settings
+  system: defineTable({
+    addedRoles: v.boolean(),
+    addedPermissions: v.boolean(),
+  }),
 });
